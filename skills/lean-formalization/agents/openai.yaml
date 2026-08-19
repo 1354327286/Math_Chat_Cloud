@@ -1,0 +1,6 @@
+interface:
+  display_name: "Lean Formalization"
+  short_description: "Audit and decompose exact mathematics for Lean verification"
+  default_prompt: "Use $lean-formalization to audit and decompose this exact result for Lean, stopping before setup until I confirm."
+policy:
+  allow_implicit_invocation: false

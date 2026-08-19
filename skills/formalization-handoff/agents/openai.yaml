@@ -1,0 +1,6 @@
+interface:
+  display_name: "Lean Formalization Handoff"
+  short_description: "Legacy transfer for explicitly separated Lean workspaces"
+  default_prompt: "Use $formalization-handoff only for an explicitly requested cross-workspace Lean transfer."
+policy:
+  allow_implicit_invocation: false

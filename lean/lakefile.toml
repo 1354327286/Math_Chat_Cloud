@@ -1,0 +1,11 @@
+name = "math_daily_lean"
+version = "0.1.0"
+keywords = ["math"]
+defaultTargets = ["MathDailyLean"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+
+[[lean_lib]]
+name = "MathDailyLean"
