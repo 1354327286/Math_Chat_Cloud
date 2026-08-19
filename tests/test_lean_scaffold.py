@@ -16,6 +16,7 @@ class LeanScaffoldTests(unittest.TestCase):
             "lean/MathDailyLean.lean",
             "lean/MathDailyLean/Common/Basic.lean",
             "scripts/bootstrap_lean.sh",
+            "scripts/lean_proc_self_exe_shim.c",
         ]
         for relative in required:
             self.assertTrue((ROOT / relative).is_file(), relative)
