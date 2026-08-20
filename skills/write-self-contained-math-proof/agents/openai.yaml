@@ -1,4 +1,4 @@
 interface:
   display_name: "Write Self-Contained Math Proof"
-  short_description: "Clarify and present a closed standalone math proof"
-  default_prompt: "Use $write-self-contained-math-proof to resolve the exact deliverable and present a closed result as a standalone proof for review."
+  short_description: "Write a closed, human-readable proof for review"
+  default_prompt: "Use $write-self-contained-math-proof to resolve the exact deliverable, verify mathematical closure, and export a self-contained proof whose terminology and prose pass a cold-read audit."

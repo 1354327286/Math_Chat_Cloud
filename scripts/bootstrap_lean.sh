@@ -124,6 +124,7 @@ case "$mode" in
 
     echo "Lean setup and initial build complete."
     echo "Review and commit lean/lean-toolchain and lean/lake-manifest.json for reproducibility."
+    echo "Use scripts/run_lean.sh for later commands so each shell activates this runtime."
     ;;
   *)
     usage >&2

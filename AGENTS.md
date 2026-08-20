@@ -25,19 +25,18 @@ with that problem's bundle.
 
 ## Session Startup
 
-Before continuing a problem, read in order:
+Before continuing a problem, read only:
 
-1. `<problem_dir>/research_state.md`
-2. `<problem_dir>/goal.md`
-3. `<problem_dir>/progress.md`
-4. `<problem_dir>/subgoal.md`
-5. the newest `<problem_dir>/YYYY-MM-DD.md`
-6. relevant `<problem_dir>/memory/` files
+1. `<problem_dir>/research_state.md`;
+2. today's `<problem_dir>/YYYY-MM-DD.md` when it exists, otherwise the most
+   recent dated note.
 
 Then give a short orientation: current goal, known progress, active obligations,
-main uncertainty, and one or two natural next moves. Missing private state means
-the workspace contains only a framework or partial snapshot; never present an
-empty skeleton as current research state.
+main uncertainty, and one or two natural next moves. Do not preload `goal.md`,
+`progress.md`, `subgoal.md`, or the whole `memory/` tree at startup. Open a linked
+detail, proof, reference, or memory file only when the selected task actually
+needs it. Missing private state means the workspace contains only a framework or
+partial snapshot; never present an empty skeleton as current research state.
 
 ## Mathematical Standards
 
@@ -53,6 +52,10 @@ empty skeleton as current research state.
   hypotheses do real work.
 - Never weaken the requested theorem, change the artifact, or add assumptions
   without saying so and obtaining any needed user decision.
+- Treat statement labels as navigation aids, not mathematical content. In chat,
+  a load-bearing use of a named lemma, equation, claim ID, or file locator must
+  also state the exact consequence being used and why its hypotheses apply; do
+  not make the user open another file merely to recover the assertion.
 
 ## Persistence and Editing
 
@@ -106,6 +109,7 @@ rules live there rather than being duplicated in this file.
 | Move one private problem between workspaces | `docs/problem_bundle.md` |
 | Acquire, organize, or search references | `docs/reference_workflow.md` and `skills/search-math-results/SKILL.md` |
 | Prepare, route, or audit a Pro discussion | `skills/pro-research-handoff/SKILL.md` |
+| Export or audit a human-readable mathematical artifact | `docs/mathematical_artifact_standard.md` |
 | Write a standalone proof | `skills/write-self-contained-math-proof/SKILL.md` |
 | Review or compile a LaTeX manuscript | `skills/review-latex-math-manuscript/SKILL.md` |
 | Formalize or verify with Lean | `skills/lean-formalization/SKILL.md`, then `lean/AGENTS.md` |

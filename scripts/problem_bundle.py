@@ -190,7 +190,7 @@ def _excluded_reason(path: Path, root: Path) -> str | None:
     if path.name in EXCLUDED_FILE_NAMES:
         return "framework placeholder or operating-system metadata"
     if path.name.endswith(".reader.md"):
-        return "generated reader copy; regenerate from the formal source"
+        return "legacy generated reader copy; excluded from the cloud workflow"
     if any(part in EXCLUDED_DIR_NAMES or part.endswith(".lancedb") for part in lowered):
         return "generated local index or cache"
     if any(part.endswith(".extracted") for part in lowered):

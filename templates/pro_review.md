@@ -18,6 +18,7 @@ The raw response is evidence to inspect, not a verified project conclusion. Do n
 ## Verification Checklist
 
 - [ ] The response addresses the exact target and uses the same definitions.
+- [ ] Every load-bearing result or locator is accompanied by the exact mathematical statement or consequence used; no click is required to recover it.
 - [ ] Every theorem application has the necessary hypotheses.
 - [ ] Important citations, theorem numbers, and version-sensitive claims are verified.
 - [ ] Limits, completions, descent, base change, and finiteness steps are justified where relevant.

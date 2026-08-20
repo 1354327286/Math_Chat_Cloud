@@ -71,9 +71,15 @@ delete a failed route merely to make the current state look cleaner.
 
 ## Startup and daily notes
 
-Use the startup order in root `AGENTS.md`. Create today's note only when the user
-expects persistent work and there is substantive material to record. Do not
-create or edit project files when the user explicitly asks for discussion only.
+At startup, read only `research_state.md` and today's dated note, or the most
+recent dated note when today's file does not exist. Do not preload `goal.md`,
+`progress.md`, `subgoal.md`, or the whole `memory/` tree. After orienting from
+those two files, open only the linked detail, proof, reference, or memory files
+needed by the selected task.
+
+Create today's note only when the user expects persistent work and there is
+substantive material to record. Do not create or edit project files when the
+user explicitly asks for discussion only.
 
 Append dated sections to logs and memory files. `research_state.md` and
 `subgoal.md` may be edited as current snapshots, but preserve relevant history

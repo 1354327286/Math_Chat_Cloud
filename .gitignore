@@ -20,6 +20,7 @@ tmp/
 
 # Private project registry overlay. The tracked projects.json is examples only.
 /projects.local.json
+/private_terms.local.txt
 
 .lancedb/
 *.lancedb/

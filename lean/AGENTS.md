@@ -13,7 +13,7 @@ Lean verification, or Lean review of a named result and the workflow in
 
 Do not install or update elan, Lean, Lake, Mathlib, or other dependencies merely
 because `lean/` exists. If the toolchain is absent, `scripts/bootstrap_lean.sh
---check` is read-only. Run `scripts/bootstrap_lean.sh --install` only after the
+--check` is read-only. Run `bash scripts/run_lean.sh install` only after the
 user explicitly authorizes setup. Do not guess a toolchain version or hand-edit
 generated dependency pins to make a build appear reproducible.
 
@@ -113,16 +113,14 @@ interface field.
 After each coherent unit, run the narrowest relevant check, for example:
 
 ```bash
-cd lean
-lake env lean MathDailyLean/Projects/<problem_name>/<Module>.lean
+bash scripts/run_lean.sh check MathDailyLean/Projects/<problem_name>/<Module>.lean
 ```
 
 Before reporting verification, run:
 
 ```bash
-cd lean
-lake build
-rg -n '\b(sorry|admit|axiom)\b' MathDailyLean MathDailyLean.lean
+bash scripts/run_lean.sh build
+rg -n '\b(sorry|admit|axiom)\b' lean/MathDailyLean lean/MathDailyLean.lean
 ```
 
 Also add or run an appropriate `#print axioms <final_declaration>` audit and

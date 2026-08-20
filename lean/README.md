@@ -17,12 +17,19 @@ bash scripts/bootstrap_lean.sh --check
 用户确认安装后，才从仓库根目录运行：
 
 ```bash
-bash scripts/bootstrap_lean.sh --install
+bash scripts/run_lean.sh install
 ```
 
-安装步骤会在 `tmp/lean-runtime/` 建立当前工作区专用的 elan 运行时，读取
+安装步骤会在 `tmp/lean-runtime/` 建立当前工作区专用的 Lean 运行时，读取
 Mathlib 当前工具链，生成 `lean-toolchain` 与 `lake-manifest.json`，获取缓存并
 构建。安装成功后应审阅并提交这两个复现文件；`.lake/` 和运行时缓存不提交。
+每个新的云端 shell 都通过统一入口重新激活该运行时：
+
+```bash
+bash scripts/run_lean.sh status
+bash scripts/run_lean.sh check MathDailyLean/Projects/<problem_name>/Main.lean
+bash scripts/run_lean.sh build
+```
 
 项目专属代码放在 `MathDailyLean/Projects/<problem_name>/`，共享代码只有在多个
 形式化确实复用时才移入 `MathDailyLean/Common/`。`Projects/` 下除公开说明文件

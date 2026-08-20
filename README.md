@@ -7,7 +7,7 @@
 把仓库和所需私有研究状态提供给 ChatGPT Work 后，可以直接发：
 
 ```text
-继续 sample_problem。请先读 sample_problem/research_state.md、sample_problem/goal.md、sample_problem/progress.md、sample_problem/subgoal.md、最近日期笔记和 sample_problem/memory/，总结当前状态。然后围绕我下面的问题推进：...
+继续 sample_problem。请先读 sample_problem/research_state.md，以及今天的日期笔记（若没有则读最近一天），总结当前状态；不要在启动时预读其它状态和 memory 文件。然后围绕我下面的问题推进：...
 
 要求：
 - 数学结论标注置信度；
@@ -35,6 +35,8 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
 
 公开仓库只保存框架和一个虚构示例；真实 `projects.local.json`、真实问题目录、`research_state.md`、日期笔记、`memory/`、`refs/`、`handoff/`，以及 `lean/MathDailyLean/Projects/<problem_name>/` 下的问题专属 Lean 源码都必须通过私有问题包装载。缺失时，Work 应明确说明只有公开框架，不能把它当作最新研究状态。完整说明见 [ChatGPT Work 云端运行约定](docs/cloud_workflow.md)。
 
+公开范围检查除路径白名单外，还扫描待提交文本中是否出现 `projects.local.json` 的真实项目路径、标题或说明，以及常见凭证格式。其它不应公开的定理名或专用短语可以逐行写入被忽略的 `private_terms.local.txt`；检查只报告命中位置和类别，不回显私密词本身。
+
 ## 目录结构
 
 ```text
@@ -53,6 +55,7 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
 │   ├── MathDailyLean.lean
 │   └── MathDailyLean/
 ├── templates/
+│   ├── math_article.tex
 │   ├── research_state.md
 │   ├── pro_task.md
 │   └── pro_review.md
@@ -84,6 +87,7 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
 | `projects.json` | 公开示例登记表；只能包含明确允许公开的虚构示例 |
 | `projects.local.json` | 真实项目登记表；本地生成、被 Git 忽略并由问题包迁移 |
 | `templates/research_state.md` | 新建问题目录时使用的统一状态模板 |
+| `templates/math_article.tex` | 审阅与正式交付共用的论文模板；草稿开关控制版本、日期和行号 |
 | `docs/reference_workflow.md` | PDF、TeX、TXT 后备、版本与校验信息的统一规范 |
 | `inbox/` | 跨问题、尚未确定归属或尚未整理的外部材料入口 |
 | `lean/` | Lean/Lake 子项目；框架和版本锁由 Git 提供，`Projects/` 下的问题源码由私有问题包迁移 |
@@ -113,7 +117,7 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
 
 ## 日常工作流
 
-1. 开始会话时，让 Work 先读 `research_state.md`，再读 `goal.md`、`progress.md`、`subgoal.md`、最近日期笔记和 `memory/`。
+1. 开始会话时，让 Work 只读 `research_state.md` 和今天的日期笔记；今天没有笔记时改读最近一天。确定当前任务后，再按需打开状态页链接的证明、参考文献或 memory 文件。
 2. 讨论数学问题时，要求 Work 区分“已证明”“合理猜想”“需要验证”“可能错误”。
 3. 有重要结论、反例、失败路径或文献线索时，让 Work 写回当前问题目录下的相应文件；跨两个问题的讨论分别更新，不能混写。
 4. 结束前让 Work 先更新当天笔记、`progress.md` 和相关详细记录，最后刷新 `research_state.md`。
@@ -133,6 +137,14 @@ python scripts/create_math_project.py my_math_problem --title "My Math Problem" 
 如果这些实质字段存在多种合理解释，Work 应当针对缺失项反问；澄清前可以只读检查，但不能先生成半成品、委派、传输或提交，也不能静默改成较弱目标或另一种执行方式。当前语境已经唯一确定全部字段且你明确要求开始时，不会重复要求确认。
 
 这一规则也适用于独立证明稿、外部审阅稿、子代理并行和 LaTeX 文稿审阅：目标、读者、输出格式、委派范围、权威源文件或“只诊断/允许修改”边界不清楚时先询问。明确要求子代理但任务不清楚时，不会悄悄退回另一种执行模式。
+
+### 云端讨论与导出稿的可读性
+
+云端里不能假定文件标签或 TeX `\label` 可以在聊天旁边直接点开。因此真正使用一个结果推理时，Work 必须在同一段写清它的精确结论、当前对象如何满足其假设，以及它在这里推出什么；普通定理号、章节、路径或链接只用于辅助定位。
+
+只有证明及其引用全部闭合后才生成审阅稿；未闭合时继续维护研究记录，不写带缺口说明或审计章节的论文。没有用户或期刊指定格式时，审阅稿与正式稿共用 `templates/math_article.tex`：草稿开关只增加版本、日期和行号，关闭后即为正常论文版，不另设项目标签、问题 ID 或修订地图。修改可以用章节、定理或公式编号、PDF 页码、草稿行号和引用原句定位。
+
+云端标准交付只有唯一权威 `.tex`、编译并目检过的 PDF 和简短交付报告，不生成 `.reader.md`。交付前 Work 只看论文自身做冷读和“读者困惑审计”，排查自造术语、未定义缩写、符号漂移、含混代词、突兀引理、抽象层级跳变、可作两种数学解释的长句，以及逻辑作用不清的段落；发现后必须先自行改写。
 
 ### 长时间自主研究（按需启用）
 
@@ -212,7 +224,7 @@ python scripts/problem_bundle.py restore /workspace/transfer/<bundle>.zip
 
 随后由你在新的 Pro 聊天里自由追问、修正和探索，不设置轮数上限，因此不会发生两个代理在后台无休止互相讨论。讨论结束时，让 Pro 输出一份自包含的最终交接稿，再将这段 Markdown 或单个文件带回 Work；Work 对照仓库审核并更新研究记录。审核完成后，Work 删除或提示你移除项目 Sources 中的 `CURRENT_PRO_HANDOFF.md`。官方说明指出项目文件适用独立的保留规则，因此这里准确说的是“从项目 Sources 移除”，不能承诺后端立即永久擦除。[ChatGPT Work 数据保留](https://learn.chatgpt.com/docs/enterprise/chatgpt-work-overview)
 
-固定文件槽同一时间只容纳一个活动问题，未完成时不能覆盖。如果确实要并行与 Pro 讨论多个问题，应明确改用带任务名的临时文件，例如 `PRO_HANDOFF_integralization_torus.md`，并分别在审计后清理。
+固定文件槽同一时间只容纳一个活动问题，未完成时不能覆盖。如果确实要并行与 Pro 讨论多个问题，应明确改用带任务名的临时文件，例如 `PRO_HANDOFF_topic_a.md`，并分别在审计后清理。
 
 [ChatGPT Work 子代理](https://learn.chatgpt.com/docs/agent-configuration/subagents)只用于准备交接说明、独立批判或审核 Pro 返回，不能代替 Pro。若你另行要求普通 Codex 代理内部辩论，才启用一次初答加至多三次追问的上限；继续需要你重新授权，而且必须明确标注这不是 Pro 讨论。
 
@@ -256,7 +268,7 @@ Lean 验证是当前项目中需要显式触发的工作流。只有你明确说
 | 档位 | 实际含义 |
 | --- | --- |
 | `sorry-free` | 最终目标和本地义务不含 `sorry`、`admit`、新全局 `axiom`、不安全逃生口或伪装证明的 `opaque`；所有外部边界在最终签名和依赖表中可见，Mathlib 结果记录精确声明名。它只是语法与依赖可见性标准，不自动代表文献闭合或内部闭合。 |
-| `provenance-complete` | 包含 `sorry-free`，并要求每个非本地证明、非精确库声明的数学输入都有作者、题名、版本/版次、定理或定义编号、章节与页码等精确定位。未形式化概念（例如 prismatic 概念）必须引用其定义的具体位置并说明 Lean 接口如何忠实表达所用部分。若一个性质由若干文献定理组合而成，必须引用原始组成定理，并把组合步骤形式化成本地引理。 |
+| `provenance-complete` | 包含 `sorry-free`，并要求每个非本地证明、非精确库声明的数学输入都有作者、题名、版本/版次、定理或定义编号、章节与页码等精确定位。尚未进入库的专业概念必须引用其定义的具体位置并说明 Lean 接口如何忠实表达所用部分。若一个性质由若干文献定理组合而成，必须引用原始组成定理，并把组合步骤形式化成本地引理。 |
 | `internally-closed` | 包含 `provenance-complete`，并且不允许任何文献结果只作为假设留下；每个依赖必须是精确认可的库定理，或从已编码定义在本项目内证明。 |
 
 `provenance-complete` 或 `internally-closed` 缺少精确文献位置时，本轮状态是 `blocked-reference`，不能偷偷降级。`provenance-complete` 即使全部引用准确，只要仍有明确的未形式化外部边界，结论也只能记为 `verified-with-documented-boundaries`。若选择持久 goal，契约还必须写清结果、约束和可检验的完成条件；当前客户端没有原生 goal 控件时，要先选择“停止”还是使用写入计划的等价契约，不能声称已经创建了原生 goal。普通子代理不是 Pro。
@@ -265,7 +277,7 @@ Lean 验证是当前项目中需要显式触发的工作流。只有你明确说
 
 如果目标含糊、证明有已知数学缺口或引用未解析，流程停在准备阶段并报告阻碍。只有准备结果为 `ready` 时才进入 Lean。仓库已经跟踪 `lean/` 骨架，但骨架不等于安装许可：工具链缺失时，Work 会展示拆解方案、最终声明和验收标准，然后等你确认；确认前不会下载或安装 elan、Lean、Lake、Mathlib。
 
-确认后，从仓库根目录运行 `bash scripts/bootstrap_lean.sh --install`。脚本在被忽略的 `tmp/lean-runtime/` 放置当前工作区运行时，并在 `lean/` 生成需要审阅和跟踪的 `lean-toolchain` 与 `lake-manifest.json`。Work 在任何 Lean 操作前同时读取根 `AGENTS.md` 和 `lean/AGENTS.md`，再按依赖顺序写代码、运行局部检查和完整构建。`lean/` 与数学框架共享一个 Git 历史，不含嵌套 `.git`，也不登记为数学问题。
+确认后，从仓库根目录运行 `bash scripts/run_lean.sh install`。运行时放在被忽略的 `tmp/lean-runtime/`，版本由 `lean/lean-toolchain` 和 `lean/lake-manifest.json` 锁定。后续每条 Lean 命令都通过 `scripts/run_lean.sh`，由它在新的云端 shell 中重新激活运行时，例如 `bash scripts/run_lean.sh check MathDailyLean/Projects/<problem_name>/Main.lean` 和 `bash scripts/run_lean.sh build`。Work 在任何 Lean 操作前同时读取根 `AGENTS.md` 和 `lean/AGENTS.md`。
 
 同仓库流程不生成请求包、传输 manifest、inbox/outbox 或回传文件；数学拆解保留在 `<problem_dir>/memory/formalization/`，代码放在 `lean/MathDailyLean/Projects/<problem_name>/`。两者都属于私有问题数据：计划和源码映射记录在该问题的 `memory/formalization/` 中，源码随问题包迁移，不能写入公开 `lean/FORMALIZATION_INDEX.md`。最终陈述对应、定义语义、构建、`sorry`、`#print axioms`、外部结果和隐藏接口都由执行形式化的 Work 自己核对，不默认要求用户阅读 Lean 代码；只有出现非等价数学目标、增补假设或外部边界政策等实质选择时才询问用户。审计完成后才能更新研究状态。
 

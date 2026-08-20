@@ -61,9 +61,9 @@ The acceptance profiles mean:
 - `provenance-complete`: includes `sorry-free`. Every mathematical input not
   proved locally or supplied by an exact library declaration also has a precise
   citation: authors, title, version or edition, theorem/definition/proposition
-  number, and section/page or another stable exact locator. A concept not yet
-  formalized in the library, such as a prismatic notion, requires the precise
-  source location of its definition and an explicit account of the Lean
+  number, and section/page or another stable exact locator. A specialized
+  concept not yet formalized in the library requires the precise source
+  location of its definition and an explicit account of the Lean
   interface used for it. If a used property is a combination of literature
   results, cite the original component theorems and formalize the combination
   as a local lemma; citing only the derived consequence is insufficient.
@@ -157,8 +157,8 @@ questions, then stop unless the accepted pre-run contract already authorized
 installation. Do not download or install elan, Lean, Lake, Mathlib, or other
 infrastructure without that explicit field. The tracked `lean/` scaffold may be
 inspected read-only before confirmation; do not use its existence as permission
-to run `scripts/bootstrap_lean.sh --install`. The accepted contract satisfies
-this checkpoint; do not ask twice.
+to run `bash scripts/run_lean.sh install`. The accepted contract satisfies this
+checkpoint; do not ask twice.
 
 ## Implement after confirmation
 
@@ -175,8 +175,8 @@ gap or semantic ambiguity, stop that branch of implementation and update the
 plan; do not repair it by changing the requested theorem or hiding an obligation
 in a structure, typeclass, adapter, opaque declaration, or extra hypothesis.
 
-Run focused checks after each coherent unit and the repository's required full
-build at the end. Inspect remaining `sorry`, declarations introduced as axioms,
+Run focused checks through `scripts/run_lean.sh` after each coherent unit and
+the repository's required full build at the end. Inspect remaining `sorry`, declarations introduced as axioms,
 unsafe or opaque stand-ins, `#print axioms` for the final result, the full final
 signature, external boundaries, and exact source-to-declaration correspondence.
 For `provenance-complete` and `internally-closed`, audit every external-input

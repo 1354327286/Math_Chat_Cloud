@@ -24,8 +24,8 @@ inbox reference stops export instead of silently producing an incomplete
 bundle. Unreferenced inbox material is not included.
 
 The exporter excludes public framework files already supplied by Git, `.gitkeep`,
-LanceDB and extracted-reference caches, Python/LaTeX intermediates, generated
-`.reader.md` companions, Lean/Lake build products, Mathlib packages, and the Lean
+LanceDB and extracted-reference caches, Python/LaTeX intermediates, legacy
+generated reader companions, Lean/Lake build products, Mathlib packages, and the Lean
 runtime. Only `.lean` files from the selected problem's exact Lean module
 directory are accepted; another problem's Lean directory is never included.
 Reference PDFs, source archives, formal TeX manuscripts, compiled PDFs, catalog
@@ -168,8 +168,7 @@ when relevant:
 
 ```bash
 python scripts/check_reference_catalog.py sample_problem/refs/catalog.json --check-files
-python scripts/generate_tex_reader.py sample_problem/notes/proof.tex
-bash scripts/bootstrap_lean.sh --check
+bash scripts/run_lean.sh status
 ```
 
 If the pinned Lean environment is already installed, also compile the restored
