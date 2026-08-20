@@ -46,10 +46,14 @@ Move code into `Common/` only after at least two formalizations genuinely share
 the same mathematical interface. Keep the top-level `MathDailyLean.lean` import
 surface small and intentional.
 
-Update `FORMALIZATION_INDEX.md` with the mathematical plan, Lean module, final
-declaration, status, and audit command. It is a mapping index, not a second
-research-state system. Never copy private mathematical notes into tracked Lean
-comments or documentation.
+Everything below `MathDailyLean/Projects/` except its public `README.md` is
+Git-ignored private research data. It travels with the matching problem bundle;
+never force-add it to the public repository. Keep the mathematical plan, Lean
+module, final declaration, status, and audit command in the matching
+`<problem_dir>/memory/formalization/` record. `FORMALIZATION_INDEX.md` is only
+for explicitly public examples and must not contain private problem names or
+mappings. Never copy private mathematical notes into tracked Lean comments or
+documentation.
 
 ## Implementation Discipline
 
@@ -116,7 +120,8 @@ Classify the result as `verified`, `verified-with-documented-boundaries`,
 the mathematical problem state only after statement correspondence and the full
 evidence audit succeed.
 
-Lean sources, `lean-toolchain`, and `lake-manifest.json` belong to this same Git
-repository. Generated `.lake/` state does not. Never initialize a nested Git
-repository under `lean/`, and do not commit or push unless authorized by the
-root workflow and the user.
+The Lean framework, `lean-toolchain`, and `lake-manifest.json` belong to this
+same Git repository. Problem-specific source belongs to the private problem
+bundle. Generated `.lake/` state belongs to neither. Never initialize a nested
+Git repository under `lean/`, and do not commit or push unless authorized by
+the root workflow and the user.

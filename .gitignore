@@ -84,3 +84,7 @@ Thumbs.db
 !/skills/
 !/templates/
 !/tests/
+
+# Private problem-specific Lean sources travel in problem bundles, not Git.
+/lean/MathDailyLean/Projects/**
+!/lean/MathDailyLean/Projects/README.md

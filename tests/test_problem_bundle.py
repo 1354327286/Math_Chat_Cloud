@@ -64,6 +64,40 @@ class ProblemBundleTests(unittest.TestCase):
         (self.source_repo / "inbox" / "related.md").write_text("original report", encoding="utf-8")
         (self.source_repo / "inbox" / "extra.md").write_text("explicit supplement", encoding="utf-8")
         (self.source_repo / "inbox" / "unrelated.md").write_text("not selected", encoding="utf-8")
+        lean_project = (
+            self.source_repo
+            / "lean"
+            / "MathDailyLean"
+            / "Projects"
+            / "sample_problem"
+        )
+        lean_project.mkdir(parents=True)
+        (lean_project / "Main.lean").write_text(
+            "theorem bundled_example : True := by trivial\n",
+            encoding="utf-8",
+        )
+        (lean_project / "Main.olean").write_bytes(b"generated")
+        (lean_project / "private_notes.md").write_text(
+            "private Lean notes belong in the problem memory instead",
+            encoding="utf-8",
+        )
+        (lean_project / ".lake").mkdir()
+        (lean_project / ".lake" / "Generated.lean").write_text(
+            "theorem generated_cache : True := by trivial\n",
+            encoding="utf-8",
+        )
+        other_lean_project = (
+            self.source_repo
+            / "lean"
+            / "MathDailyLean"
+            / "Projects"
+            / "other_problem"
+        )
+        other_lean_project.mkdir(parents=True)
+        (other_lean_project / "Other.lean").write_text(
+            "theorem unrelated : True := by trivial\n",
+            encoding="utf-8",
+        )
         self.bundle = self.root / "sample.zip"
 
     def tearDown(self):
@@ -73,6 +107,7 @@ class ProblemBundleTests(unittest.TestCase):
     def _make_public_checkout(root: Path) -> None:
         root.mkdir(parents=True)
         (root / "inbox").mkdir()
+        (root / "lean" / "MathDailyLean" / "Projects").mkdir(parents=True)
         (root / "projects.json").write_text(
             json.dumps(
                 {
@@ -109,11 +144,31 @@ class ProblemBundleTests(unittest.TestCase):
         self.assertIn("sample_problem/downloads/source.tar.gz", paths)
         self.assertIn("inbox/related.md", paths)
         self.assertIn("sample_problem/README.md", paths)
+        self.assertIn(
+            "lean/MathDailyLean/Projects/sample_problem/Main.lean",
+            paths,
+        )
         self.assertNotIn("sample_problem/notes/proof.reader.md", paths)
         self.assertNotIn("sample_problem/notes/proof.aux", paths)
         self.assertNotIn("sample_problem/refs/.lancedb/index.bin", paths)
         self.assertNotIn("inbox/unrelated.md", paths)
         self.assertNotIn("inbox/extra.md", paths)
+        self.assertNotIn(
+            "lean/MathDailyLean/Projects/sample_problem/Main.olean",
+            paths,
+        )
+        self.assertNotIn(
+            "lean/MathDailyLean/Projects/sample_problem/private_notes.md",
+            paths,
+        )
+        self.assertNotIn(
+            "lean/MathDailyLean/Projects/sample_problem/.lake/Generated.lean",
+            paths,
+        )
+        self.assertNotIn(
+            "lean/MathDailyLean/Projects/other_problem/Other.lean",
+            paths,
+        )
 
         verified = verify_bundle(self.bundle)
         self.assertEqual(verified["totals"]["files"], len(paths))
@@ -131,6 +186,17 @@ class ProblemBundleTests(unittest.TestCase):
         self.assertEqual(
             (self.restore_repo / "inbox" / "related.md").read_text(encoding="utf-8"),
             "original report",
+        )
+        self.assertEqual(
+            (
+                self.restore_repo
+                / "lean"
+                / "MathDailyLean"
+                / "Projects"
+                / "sample_problem"
+                / "Main.lean"
+            ).read_text(encoding="utf-8"),
+            "theorem bundled_example : True := by trivial\n",
         )
         self.assertFalse((self.restore_repo / "inbox" / "unrelated.md").exists())
 
@@ -205,7 +271,15 @@ class ProblemBundleTests(unittest.TestCase):
             self._export()
 
     def test_manifest_cannot_target_public_or_git_paths(self):
-        for relative in ("projects.json", "inbox/README.md", "sample_problem/notes/.git/config"):
+        for relative in (
+            "projects.json",
+            "inbox/README.md",
+            "sample_problem/notes/.git/config",
+            "lean/MathDailyLean/Projects/other_problem/Main.lean",
+            "lean/MathDailyLean/Projects/sample_problem/Main.olean",
+            "lean/MathDailyLean/Projects/sample_problem/.lake/Evil.lean",
+            "lean/lean-toolchain",
+        ):
             with self.subTest(relative=relative):
                 malicious = self.root / f"malicious-{hashlib.sha256(relative.encode()).hexdigest()[:8]}.zip"
                 data = b"overwrite"

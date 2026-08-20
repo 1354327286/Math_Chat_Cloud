@@ -17,8 +17,11 @@ unless the user chooses it. If work affects two projects, update them separately
 and keep their goals, evidence, failures, and next actions distinct.
 
 Each registered problem keeps its private research state inside its own
-directory. The tracked `lean/` directory is the formalization subproject, not a
+directory. The tracked `lean/` framework is the formalization subproject, not a
 mathematical problem, and must not be added to either project registry.
+Problem-specific source under
+`lean/MathDailyLean/Projects/<problem_name>/` is private, Git-ignored, and moves
+with that problem's bundle.
 
 ## Session Startup
 
@@ -66,9 +69,10 @@ content only in files explicitly maintained as current snapshots. Batch small
 updates instead of creating noise, but do not leave an important proof,
 counterexample, failure, or source finding only in chat.
 
-Private research files, real project directories, and `projects.local.json` are
-intentionally ignored by Git. Do not force-add them or move them into tracked
-framework paths to bypass the public-scope policy.
+Private research files, real project directories, problem-specific Lean source,
+and `projects.local.json` are intentionally ignored by Git. Do not force-add
+them or move them into tracked framework paths to bypass the public-scope
+policy.
 
 ## Detached Work Boundary
 
@@ -124,7 +128,8 @@ Lean should the Lean workflow run. Mathematical closure and a dependency plan
 come first. If toolchain setup is still required, stop at the skill's setup gate
 until the user authorizes installation. Do not create request packets,
 inbox/outbox copies, manifests, or return bundles for this same-repository
-workflow.
+workflow. A problem bundle is used only when the private problem, including its
+Lean source, moves to another workspace.
 
 Before reading, editing, or running anything under `lean/`, always read
 `lean/AGENTS.md` in addition to this file, even if the current working directory

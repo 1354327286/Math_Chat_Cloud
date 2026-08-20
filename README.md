@@ -33,7 +33,7 @@ bash scripts/bootstrap_cloud.sh
 
 Work 云端任务可以使用当前工作区文件、已授权插件和工具并运行 Linux 命令，但不能假定可以访问你电脑上的磁盘、浏览器会话、凭证管理器、Ollama 或其他本机仓库。云端工作目录也不应被当作永久存储：一次任务内以仓库文件为准，跨任务内容必须写入明确授权的 GitHub 目标，或作为可下载文件/问题包交付。
 
-公开仓库只保存框架和一个虚构示例；真实 `projects.local.json`、真实问题目录、`research_state.md`、日期笔记、`memory/`、`refs/` 和 `handoff/` 都必须通过私有问题包装载。缺失时，Work 应明确说明只有公开框架，不能把它当作最新研究状态。完整说明见 [ChatGPT Work 云端运行约定](docs/cloud_workflow.md)。
+公开仓库只保存框架和一个虚构示例；真实 `projects.local.json`、真实问题目录、`research_state.md`、日期笔记、`memory/`、`refs/`、`handoff/`，以及 `lean/MathDailyLean/Projects/<problem_name>/` 下的问题专属 Lean 源码都必须通过私有问题包装载。缺失时，Work 应明确说明只有公开框架，不能把它当作最新研究状态。完整说明见 [ChatGPT Work 云端运行约定](docs/cloud_workflow.md)。
 
 ## 目录结构
 
@@ -86,7 +86,7 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
 | `templates/research_state.md` | 新建问题目录时使用的统一状态模板 |
 | `docs/reference_workflow.md` | PDF、TeX、TXT 后备、版本与校验信息的统一规范 |
 | `inbox/` | 跨问题、尚未确定归属或尚未整理的外部材料入口 |
-| `lean/` | 与主项目共享 Git 历史的 Lean/Lake 子项目；内部规则见 `lean/AGENTS.md` |
+| `lean/` | Lean/Lake 子项目；框架和版本锁由 Git 提供，`Projects/` 下的问题源码由私有问题包迁移 |
 | `<problem_dir>/handoff/` | 该问题与外部 Pro 或旧跨工作区形式化任务的中转记录；同项目 Lean 工作流不使用此目录 |
 | `<problem_dir>/research_state.md` | 当前问题的六栏紧凑状态页 |
 | `<problem_dir>/goal.md` | 当前数学问题的长期目标和精确陈述 |
@@ -187,7 +187,7 @@ python scripts/problem_bundle.py export sample_problem --inbox inbox/额外材�
 python scripts/problem_bundle.py inspect tmp/problem_bundles/<bundle>.zip
 ```
 
-导出器会自动包含该问题 Markdown 中明确引用且实际存在的 `inbox/` 文件；`--inbox` 只用于补充尚未被引用的材料，不会打包整个 inbox。在目标工作区装载仓库后，先预演再恢复：
+导出器会自动包含该问题 Markdown 中明确引用且实际存在的 `inbox/` 文件，以及 `lean/MathDailyLean/Projects/<problem_name>/` 下该问题的 `.lean` 源码；`--inbox` 只用于补充尚未被引用的材料，不会打包整个 inbox，也不会携带其他问题的 Lean 代码、`.lake/`、Mathlib 缓存或运行时。在目标工作区装载仓库后，先预演再恢复：
 
 ```bash
 python scripts/problem_bundle.py restore /workspace/transfer/<bundle>.zip --dry-run
@@ -255,7 +255,7 @@ Lean 验证是当前项目中需要显式触发的工作流。只有你明确说
 
 确认后，从仓库根目录运行 `bash scripts/bootstrap_lean.sh --install`。脚本在被忽略的 `tmp/lean-runtime/` 放置当前工作区运行时，并在 `lean/` 生成需要审阅和跟踪的 `lean-toolchain` 与 `lake-manifest.json`。Work 在任何 Lean 操作前同时读取根 `AGENTS.md` 和 `lean/AGENTS.md`，再按依赖顺序写代码、运行局部检查和完整构建。`lean/` 与数学框架共享一个 Git 历史，不含嵌套 `.git`，也不登记为数学问题。
 
-同仓库流程不生成请求包、传输 manifest、inbox/outbox 或回传文件；数学拆解保留在 `<problem_dir>/memory/formalization/`，代码放在 `lean/MathDailyLean/Projects/<problem_name>/`，两者的公开映射写入 `lean/FORMALIZATION_INDEX.md`。最终陈述对应、定义语义、构建、`sorry`、`#print axioms`、外部结果和隐藏接口都由执行形式化的 Work 自己核对，不默认要求用户阅读 Lean 代码；只有出现非等价数学目标、增补假设或外部边界政策等实质选择时才询问用户。审计完成后才能更新研究状态。
+同仓库流程不生成请求包、传输 manifest、inbox/outbox 或回传文件；数学拆解保留在 `<problem_dir>/memory/formalization/`，代码放在 `lean/MathDailyLean/Projects/<problem_name>/`。两者都属于私有问题数据：计划和源码映射记录在该问题的 `memory/formalization/` 中，源码随问题包迁移，不能写入公开 `lean/FORMALIZATION_INDEX.md`。最终陈述对应、定义语义、构建、`sorry`、`#print axioms`、外部结果和隐藏接口都由执行形式化的 Work 自己核对，不默认要求用户阅读 Lean 代码；只有出现非等价数学目标、增补假设或外部边界政策等实质选择时才询问用户。审计完成后才能更新研究状态。
 
 旧的 `scripts/formalization_handoff.py` 仅保留为 Windows/跨工作区交接的兼容工具，不是云端同项目工作流的默认入口。
 

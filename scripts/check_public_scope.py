@@ -48,6 +48,8 @@ EXPECTED_PUBLIC_REGISTRY = {
 }
 PRIVATE_STATE_FILES = {"research_state.md", "goal.md", "progress.md", "subgoal.md"}
 PRIVATE_SUBDIRECTORIES = {"notes", "memory", "refs", "downloads", "handoff"}
+PRIVATE_LEAN_PREFIX = ("lean", "MathDailyLean", "Projects")
+PUBLIC_LEAN_PROJECTS_README = "lean/MathDailyLean/Projects/README.md"
 BLOCKED_SUFFIXES = {".pdf", ".tar", ".tgz", ".zip", ".lancedb"}
 DATED_NOTE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
 
@@ -71,6 +73,13 @@ def violation_reason(raw_path: str) -> Optional[str]:
 
     if parts[0] == "inbox" and path.name != "README.md":
         return f"research {parts[0]} content must remain local"
+
+    if (
+        len(parts) >= 4
+        and tuple(parts[:3]) == PRIVATE_LEAN_PREFIX
+        and path.as_posix() != PUBLIC_LEAN_PROJECTS_README
+    ):
+        return "problem-specific Lean source must remain local and travel in a problem bundle"
 
     if len(parts) >= 2 and parts[1] in PRIVATE_SUBDIRECTORIES:
         if path.name != ".gitkeep":

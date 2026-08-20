@@ -25,5 +25,8 @@ Mathlib 当前工具链，生成 `lean-toolchain` 与 `lake-manifest.json`，获
 构建。安装成功后应审阅并提交这两个复现文件；`.lake/` 和运行时缓存不提交。
 
 项目专属代码放在 `MathDailyLean/Projects/<problem_name>/`，共享代码只有在多个
-形式化确实复用时才移入 `MathDailyLean/Common/`。数学计划与 Lean 声明的映射
-记录在 `FORMALIZATION_INDEX.md`。
+形式化确实复用时才移入 `MathDailyLean/Common/`。`Projects/` 下除公开说明文件
+外全部被 Git 忽略；跨工作区时，所选问题的 `.lean` 源码随私有问题包导出和恢复，
+不携带 `.lake/`、Mathlib 缓存或运行时。私有数学计划与 Lean 声明的映射记录在
+对应 `<problem_dir>/memory/formalization/` 中；`FORMALIZATION_INDEX.md` 只登记
+明确允许公开的示例。
