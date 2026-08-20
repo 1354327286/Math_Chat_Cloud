@@ -17,6 +17,27 @@ because `lean/` exists. If the toolchain is absent, `scripts/bootstrap_lean.sh
 user explicitly authorizes setup. Do not guess a toolchain version or hand-edit
 generated dependency pins to make a build appear reproducible.
 
+## Accepted Execution Contract
+
+Before the first plan write, source edit, installation/update, Lean or Lake
+command, goal activation, or subagent delegation in a new campaign, require an
+accepted pre-run contract from `skills/lean-formalization/SKILL.md`. It must fix
+the exact target, one acceptance profile, goal mode, subagent policy, and
+environment authorization. An accepted campaign may run multiple checks without
+reasking while these fields remain unchanged.
+
+Subagents are forbidden unless the contract says `allowed`. Permission must name
+an actually exposed model and reasoning effort for each role, the task and
+read/write boundary, count/concurrency and follow-up limits, the integration and
+final-audit owner, and termination conditions. Do not inherit authorization from
+a previous campaign or substitute an ordinary subagent for Pro.
+
+If any field is missing, stop before execution. Read-only orientation is allowed,
+but do not choose a default acceptance profile, create a persistent goal, edit
+Lean, run the toolchain, or delegate. If native goal control is unavailable,
+follow the contract's explicit `stop` or goal-equivalent fallback choice and do
+not claim that a native goal was created.
+
 ## Mathematical Authority
 
 The authoritative mathematical target and dependency plan live in
@@ -70,12 +91,22 @@ Keep proof obligations small enough to isolate one mathematical or encoding
 failure, but preserve natural interfaces. Prefer explicit local definitions and
 lemmas over automation whose behavior obscures the proof boundary.
 
-No production declaration may contain `sorry` or `admit`. Do not introduce an
-`axiom`, `opaque` stand-in, or unsafe escape hatch for a missing proof. A theorem
-from Mathlib is an external dependency, not an unverified local boundary; record
-its exact declaration. Any genuinely assumed external mathematical boundary
-must be explicit in the accepted plan and visible in the final theorem's axiom
-audit.
+No production declaration may contain `sorry` or `admit`. Do not introduce a
+global `axiom`, `opaque` stand-in, or unsafe escape hatch for a missing proof.
+A theorem from Mathlib is an external dependency, not an unverified local
+boundary; record its exact declaration. A genuinely assumed literature boundary
+must be authorized by the selected profile and represented explicitly as a
+theorem parameter or declared interface, never hidden as a global axiom. It must
+appear both in the external-input ledger and in the final declaration's full
+signature; `#print axioms` alone does not expose theorem parameters.
+
+For `provenance-complete`, verify every external mathematical input against an
+exact source location. For a concept not already formalized, record the exact
+defining source and audit the faithfulness of the Lean interface actually used.
+When a property combines multiple literature theorems, cite the original
+component theorems and prove the combination as a local Lean lemma. For
+`internally-closed`, no literature boundary may remain as a parameter or
+interface field.
 
 ## Validation
 
@@ -95,13 +126,16 @@ rg -n '\b(sorry|admit|axiom)\b' MathDailyLean MathDailyLean.lean
 ```
 
 Also add or run an appropriate `#print axioms <final_declaration>` audit and
-inspect its output. Confirm all of the following:
+inspect its output and the full printed declaration signature. Confirm all of
+the following:
 
 - the compiled declaration is exactly the requested statement;
 - definitions, coercions, and structures have the intended semantics;
 - every planned dependency is proved locally or mapped to an exact library
   result;
 - no hidden hypothesis or external boundary entered during encoding;
+- every external-input ledger row meets the selected acceptance profile, and
+  every derived input has a checked local combination lemma;
 - focused checks and the full build succeeded in the pinned environment.
 
 The agent carrying out the formalization owns this complete semantic audit. Do

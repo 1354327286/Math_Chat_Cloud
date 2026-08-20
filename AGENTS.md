@@ -131,6 +131,18 @@ inbox/outbox copies, manifests, or return bundles for this same-repository
 workflow. A problem bundle is used only when the private problem, including its
 Lean source, moves to another workspace.
 
+Before each new Lean formalization campaign, resolve the complete pre-run
+contract in `skills/lean-formalization/SKILL.md`: the exact target and source,
+the acceptance profile and external-input policy, ordinary Work versus a
+persistent goal, whether subagents are allowed, and toolchain authorization. If
+subagents are allowed, also fix each role's available model, reasoning effort,
+task and write boundary, count/concurrency limit, integration owner, and stopping
+rule. Silence, a previous campaign, or a generic instruction to continue does
+not authorize a goal or subagents. Read-only orientation is allowed while fields
+are open, but do not write the formalization plan, edit Lean, install or run the
+toolchain, or delegate. One campaign may contain many Lean/Lake commands under
+the unchanged accepted contract; do not ask again before every command.
+
 Before reading, editing, or running anything under `lean/`, always read
 `lean/AGENTS.md` in addition to this file, even if the current working directory
 is the repository root. `lean/` shares this repository's single Git history; it
