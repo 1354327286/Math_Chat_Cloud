@@ -1,7 +1,9 @@
 # Formalization Index
 
-This tracked index maps private mathematical plans to Lean modules without
-copying private research content into the public framework.
+This tracked index lists only formalizations explicitly approved for the public
+framework. Private problem names, plans, Lean modules, declarations, and audit
+status stay in the matching problem's `memory/formalization/` records and move
+with its problem bundle.
 
 | Problem | Plan | Lean module | Final declaration | Status | Last audit |
 | --- | --- | --- | --- | --- | --- |

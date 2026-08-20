@@ -12,9 +12,11 @@ bash scripts/bootstrap_cloud.sh
 
 脚本安装基础 Python 依赖、编译检查脚本、验证公开 `projects.json` 与可选的私有 `projects.local.json`，并检查公开 Git 跟踪范围。它不下载论文、不启动后台服务，也不建立语义索引。
 
+公开范围检查同时扫描文本内容：自动把 `projects.local.json` 中的真实项目路径、标题和说明视为私密词，并检查常见凭证格式。额外的私密定理名或短语可放入被 Git 忽略的 `private_terms.local.txt`，每行一项。诊断不会回显命中的私密词。
+
 ## 状态装载
 
-公开仓库只保存框架、公开示例登记和虚构示例目录。真实项目的 `projects.local.json`、问题目录、`research_state.md`、日期笔记、`memory/`、`refs/`、`handoff/` 等都被 Git 忽略，并由私有问题包迁移。开始研究前，应确认所需私有状态已经装载；缺失时必须明确说明，不能把公开框架当作最新状态。
+公开仓库只保存框架、公开示例登记和虚构示例目录。真实项目的 `projects.local.json`、问题目录、`research_state.md`、日期笔记、`memory/`、`refs/`、`handoff/`，以及 `lean/MathDailyLean/Projects/<problem_name>/` 下的问题专属 Lean 源码都被 Git 忽略，并由私有问题包迁移。开始研究前，应确认所需私有状态已经装载；缺失时必须明确说明，不能把公开框架当作最新状态。
 
 生成适合 Work 文件预览的静态概览：
 
@@ -38,7 +40,8 @@ python scripts/cloud_research_report.py --output tmp/research-overview.md
 
 - GitHub：优先使用已连接的 GitHub 工具读取远端信息；本地 `git` 适合检查 diff 和状态，但不能假定拥有 `pull`/`push` 凭证。
 - 网络：依赖当前环境的网络策略和域名白名单。文献调研优先使用可用的网页检索与连接器；脚本联网失败时记录失败，不绕过限制。
-- Lean：只有用户显式要求 Lean 形式化或 Lean 审阅时，才读取 `skills/lean-formalization/SKILL.md`。先完成陈述闭合、指代消解和依赖拆解；工具链缺失时停在准备结果，等用户确认后才运行 `scripts/bootstrap_lean.sh --install`。代码直接写入同一 Git 仓库的 `lean/` 子项目，任何操作前同时读取根 `AGENTS.md` 与 `lean/AGENTS.md`。不建立嵌套仓库，不使用 `stage`、请求包或回传包，也不假定固定盘符或本机路径。
+- Lean：只有用户显式要求 Lean 形式化或 Lean 审阅时，才读取 `skills/lean-formalization/SKILL.md`。每轮先固定精确命题、`sorry-free` / `provenance-complete` / `internally-closed` 验收档位、普通 Work 或持久 goal、子代理许可与（若许可）模型/推理强度/任务边界/数量和停止规则，以及工具链运行与安装权限；字段未齐不得写计划、运行或委派。先完成陈述闭合、指代消解和依赖拆解。工具链缺失且本轮已授权安装时运行 `bash scripts/run_lean.sh install`；后续检查和构建也只通过这个入口，使每个新的云端 shell 都能重新激活 `tmp/lean-runtime/`。代码直接写入同一仓库的 `lean/` 子项目，跨工作区时问题专属 `.lean` 源码随对应的私有问题包迁移。
+- TeX：新论文默认使用 `templates/math_article.tex`。通过 `python scripts/build_tex.py <source.tex> --strict` 在 `tmp/` 中准备隔离格式、重复编译、扫描最终日志并渲染页面；`.tex` 与 PDF 是交付物，不生成 Markdown 阅读副本。
 - Pro 交接：需要用户与 Pro 多轮讨论时，Work 从仓库整理自包含的 `CURRENT_PRO_HANDOFF.md`，并在能力可用时临时加入项目 Sources；否则交付给用户手动添加。Pro 只读取这一文件，不需要 GitHub 仓库、项目路径或 Work 运行目录。用户在独立 Pro 聊天中讨论，最终把交接稿带回 Work 审核；审核完成后从项目 Sources 移除临时文件。固定槽未完成时不得覆盖，并行问题改用任务专属文件。普通 Codex 子代理不是 Pro。只有跨项目、外部服务、单文件无法传递或明确需要不可变审计时才生成完整任务包。
 - 语义索引：LanceDB/Ollama 是本地兼容能力。在 Work 云端默认使用 `rg`、现有 TeX/TXT/PDF 和网页检索，不启动 Ollama 或长期后台服务。
 

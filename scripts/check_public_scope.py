@@ -8,7 +8,7 @@ import json
 import re
 import subprocess
 from pathlib import Path, PurePosixPath
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Sequence
 
 
 PUBLIC_ROOT_FILES = {
@@ -48,8 +48,33 @@ EXPECTED_PUBLIC_REGISTRY = {
 }
 PRIVATE_STATE_FILES = {"research_state.md", "goal.md", "progress.md", "subgoal.md"}
 PRIVATE_SUBDIRECTORIES = {"notes", "memory", "refs", "downloads", "handoff"}
+PRIVATE_LEAN_PREFIX = ("lean", "MathDailyLean", "Projects")
+PUBLIC_LEAN_PROJECTS_README = "lean/MathDailyLean/Projects/README.md"
 BLOCKED_SUFFIXES = {".pdf", ".tar", ".tgz", ".zip", ".lancedb"}
 DATED_NOTE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
+PRIVATE_TERMS_FILE = "private_terms.local.txt"
+TEXT_SUFFIXES = {
+    "",
+    ".css",
+    ".html",
+    ".js",
+    ".json",
+    ".lean",
+    ".md",
+    ".py",
+    ".sh",
+    ".tex",
+    ".toml",
+    ".txt",
+    ".yaml",
+    ".yml",
+}
+SECRET_PATTERNS = {
+    "private key": re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----"),
+    "GitHub token": re.compile(r"\b(?:github_pat_[A-Za-z0-9_]{20,}|gh[opsu]_[A-Za-z0-9]{30,})\b"),
+    "OpenAI API key": re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b"),
+    "AWS access key": re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+}
 
 
 def violation_reason(raw_path: str) -> Optional[str]:
@@ -71,6 +96,13 @@ def violation_reason(raw_path: str) -> Optional[str]:
 
     if parts[0] == "inbox" and path.name != "README.md":
         return f"research {parts[0]} content must remain local"
+
+    if (
+        len(parts) >= 4
+        and tuple(parts[:3]) == PRIVATE_LEAN_PREFIX
+        and path.as_posix() != PUBLIC_LEAN_PROJECTS_README
+    ):
+        return "problem-specific Lean source must remain local and travel in a problem bundle"
 
     if len(parts) >= 2 and parts[1] in PRIVATE_SUBDIRECTORIES:
         if path.name != ".gitkeep":
@@ -116,6 +148,87 @@ def find_violations(paths: Iterable[str]) -> List[str]:
     return violations
 
 
+def load_private_terms(repo_root: Path) -> tuple[List[str], List[str]]:
+    """Load exact private terms without ever returning them in diagnostics."""
+
+    terms: List[str] = []
+    errors: List[str] = []
+    registry = repo_root / "projects.local.json"
+    if registry.is_file():
+        try:
+            data = json.loads(registry.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            errors.append(f"projects.local.json: cannot load private content audit metadata: {exc}")
+        else:
+            projects = data.get("projects", []) if isinstance(data, dict) else []
+            if isinstance(projects, list):
+                for project in projects:
+                    if not isinstance(project, dict):
+                        continue
+                    for field, minimum in (("path", 4), ("title", 6), ("description", 12)):
+                        value = project.get(field)
+                        if isinstance(value, str) and len(value.strip()) >= minimum:
+                            terms.append(value.strip())
+
+    private_terms = repo_root / PRIVATE_TERMS_FILE
+    if private_terms.is_file():
+        try:
+            for raw in private_terms.read_text(encoding="utf-8").splitlines():
+                value = raw.strip()
+                if value and not value.startswith("#") and len(value) >= 4:
+                    terms.append(value)
+        except OSError as exc:
+            errors.append(f"{PRIVATE_TERMS_FILE}: cannot load private content audit terms: {exc}")
+
+    deduplicated = list(dict.fromkeys(term.casefold() for term in terms))
+    return deduplicated, errors
+
+
+def sensitive_content_reasons(text: str, private_terms: Sequence[str]) -> List[str]:
+    reasons: List[str] = []
+    folded = text.casefold()
+    if any(term in folded for term in private_terms):
+        reasons.append("contains text copied from private project metadata or the local private-term list")
+    for label, pattern in SECRET_PATTERNS.items():
+        if pattern.search(text):
+            reasons.append(f"contains a possible {label}")
+    return reasons
+
+
+def _content_for_path(repo_root: Path, path: str, staged: bool) -> Optional[str]:
+    suffix = PurePosixPath(path).suffix.lower()
+    if suffix not in TEXT_SUFFIXES:
+        return None
+    try:
+        if staged:
+            result = subprocess.run(
+                ["git", "show", f":{path}"],
+                cwd=repo_root,
+                check=True,
+                capture_output=True,
+            )
+            payload = result.stdout
+        else:
+            payload = (repo_root / path).read_bytes()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    if len(payload) > 2 * 1024 * 1024:
+        return None
+    return payload.decode("utf-8", errors="replace")
+
+
+def content_violations(repo_root: Path, paths: Sequence[str], staged: bool) -> List[str]:
+    private_terms, errors = load_private_terms(repo_root)
+    violations = list(errors)
+    for path in paths:
+        text = _content_for_path(repo_root, path, staged)
+        if text is None:
+            continue
+        for reason in sensitive_content_reasons(text, private_terms):
+            violations.append(f"{path}: {reason}")
+    return violations
+
+
 def public_registry_violations(repo_root: str) -> List[str]:
     registry_path = Path(repo_root) / "projects.json"
     try:
@@ -139,8 +252,11 @@ def main() -> int:
     parser.add_argument("--repo", default=".", help="repository root (default: current directory)")
     args = parser.parse_args()
 
-    violations = find_violations(_git_paths(args.repo, args.tracked))
-    violations.extend(public_registry_violations(args.repo))
+    repo_root = Path(args.repo).resolve()
+    paths = _git_paths(str(repo_root), args.tracked)
+    violations = find_violations(paths)
+    violations.extend(public_registry_violations(str(repo_root)))
+    violations.extend(content_violations(repo_root, paths, staged=not args.tracked))
     if violations:
         print("Private research data detected:")
         for violation in violations:

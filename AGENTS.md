@@ -17,24 +17,26 @@ unless the user chooses it. If work affects two projects, update them separately
 and keep their goals, evidence, failures, and next actions distinct.
 
 Each registered problem keeps its private research state inside its own
-directory. The tracked `lean/` directory is the formalization subproject, not a
+directory. The tracked `lean/` framework is the formalization subproject, not a
 mathematical problem, and must not be added to either project registry.
+Problem-specific source under
+`lean/MathDailyLean/Projects/<problem_name>/` is private, Git-ignored, and moves
+with that problem's bundle.
 
 ## Session Startup
 
-Before continuing a problem, read in order:
+Before continuing a problem, read only:
 
-1. `<problem_dir>/research_state.md`
-2. `<problem_dir>/goal.md`
-3. `<problem_dir>/progress.md`
-4. `<problem_dir>/subgoal.md`
-5. the newest `<problem_dir>/YYYY-MM-DD.md`
-6. relevant `<problem_dir>/memory/` files
+1. `<problem_dir>/research_state.md`;
+2. today's `<problem_dir>/YYYY-MM-DD.md` when it exists, otherwise the most
+   recent dated note.
 
 Then give a short orientation: current goal, known progress, active obligations,
-main uncertainty, and one or two natural next moves. Missing private state means
-the workspace contains only a framework or partial snapshot; never present an
-empty skeleton as current research state.
+main uncertainty, and one or two natural next moves. Do not preload `goal.md`,
+`progress.md`, `subgoal.md`, or the whole `memory/` tree at startup. Open a linked
+detail, proof, reference, or memory file only when the selected task actually
+needs it. Missing private state means the workspace contains only a framework or
+partial snapshot; never present an empty skeleton as current research state.
 
 ## Mathematical Standards
 
@@ -50,6 +52,10 @@ empty skeleton as current research state.
   hypotheses do real work.
 - Never weaken the requested theorem, change the artifact, or add assumptions
   without saying so and obtaining any needed user decision.
+- Treat statement labels as navigation aids, not mathematical content. In chat,
+  a load-bearing use of a named lemma, equation, claim ID, or file locator must
+  also state the exact consequence being used and why its hypotheses apply; do
+  not make the user open another file merely to recover the assertion.
 
 ## Persistence and Editing
 
@@ -66,9 +72,10 @@ content only in files explicitly maintained as current snapshots. Batch small
 updates instead of creating noise, but do not leave an important proof,
 counterexample, failure, or source finding only in chat.
 
-Private research files, real project directories, and `projects.local.json` are
-intentionally ignored by Git. Do not force-add them or move them into tracked
-framework paths to bypass the public-scope policy.
+Private research files, real project directories, problem-specific Lean source,
+and `projects.local.json` are intentionally ignored by Git. Do not force-add
+them or move them into tracked framework paths to bypass the public-scope
+policy.
 
 ## Detached Work Boundary
 
@@ -102,6 +109,7 @@ rules live there rather than being duplicated in this file.
 | Move one private problem between workspaces | `docs/problem_bundle.md` |
 | Acquire, organize, or search references | `docs/reference_workflow.md` and `skills/search-math-results/SKILL.md` |
 | Prepare, route, or audit a Pro discussion | `skills/pro-research-handoff/SKILL.md` |
+| Export or audit a human-readable mathematical artifact | `docs/mathematical_artifact_standard.md` |
 | Write a standalone proof | `skills/write-self-contained-math-proof/SKILL.md` |
 | Review or compile a LaTeX manuscript | `skills/review-latex-math-manuscript/SKILL.md` |
 | Formalize or verify with Lean | `skills/lean-formalization/SKILL.md`, then `lean/AGENTS.md` |
@@ -124,7 +132,20 @@ Lean should the Lean workflow run. Mathematical closure and a dependency plan
 come first. If toolchain setup is still required, stop at the skill's setup gate
 until the user authorizes installation. Do not create request packets,
 inbox/outbox copies, manifests, or return bundles for this same-repository
-workflow.
+workflow. A problem bundle is used only when the private problem, including its
+Lean source, moves to another workspace.
+
+Before each new Lean formalization campaign, resolve the complete pre-run
+contract in `skills/lean-formalization/SKILL.md`: the exact target and source,
+the acceptance profile and external-input policy, ordinary Work versus a
+persistent goal, whether subagents are allowed, and toolchain authorization. If
+subagents are allowed, also fix each role's available model, reasoning effort,
+task and write boundary, count/concurrency limit, integration owner, and stopping
+rule. Silence, a previous campaign, or a generic instruction to continue does
+not authorize a goal or subagents. Read-only orientation is allowed while fields
+are open, but do not write the formalization plan, edit Lean, install or run the
+toolchain, or delegate. One campaign may contain many Lean/Lake commands under
+the unchanged accepted contract; do not ask again before every command.
 
 Before reading, editing, or running anything under `lean/`, always read
 `lean/AGENTS.md` in addition to this file, even if the current working directory

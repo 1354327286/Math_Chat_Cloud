@@ -5,7 +5,9 @@ from pathlib import Path
 
 from scripts.check_public_scope import (
     find_violations,
+    load_private_terms,
     public_registry_violations,
+    sensitive_content_reasons,
     violation_reason,
 )
 from scripts.create_math_project import create_project, register_project
@@ -86,6 +88,50 @@ class PublicScopeTests(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertTrue(public_registry_violations(str(root)))
+
+    def test_sensitive_content_detects_private_terms_without_echoing_them(self):
+        private = "unpublished_project_slug"
+        reasons = sensitive_content_reasons(
+            f"This accidentally names {private} in a public guide.",
+            [private],
+        )
+        self.assertTrue(reasons)
+        self.assertNotIn(private, " ".join(reasons))
+
+    def test_private_terms_load_from_local_registry_and_ignored_list(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            (root / "projects.local.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "projects": [
+                            {
+                                "path": "secret_problem",
+                                "title": "Secret theorem project",
+                                "role": "active",
+                                "description": "A private unpublished mathematical objective",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (root / "private_terms.local.txt").write_text(
+                "# private audit terms\nHidden Lemma Name\n",
+                encoding="utf-8",
+            )
+            terms, errors = load_private_terms(root)
+            self.assertFalse(errors)
+            self.assertIn("secret_problem", terms)
+            self.assertIn("hidden lemma name", terms)
+
+    def test_secret_patterns_are_detected(self):
+        reasons = sensitive_content_reasons(
+            "credential=github_" + "pat_" + "abcdefghijklmnopqrstuvwxyz0123456789",
+            [],
+        )
+        self.assertTrue(any("GitHub token" in reason for reason in reasons))
 
 
 class CreateProjectTests(unittest.TestCase):

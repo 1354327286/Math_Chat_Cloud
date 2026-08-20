@@ -2,9 +2,9 @@
 """Export, inspect, and restore a private portable math-problem bundle.
 
 The public repository is cloned separately.  A bundle contains only the
-selected problem's Git-ignored research data, inbox files referenced by its
-Markdown, and any explicitly added inbox material, preserving paths relative
-to the repository root.
+selected problem's Git-ignored research data, its problem-specific Lean source,
+inbox files referenced by its Markdown, and any explicitly added inbox
+material, preserving paths relative to the repository root.
 """
 
 from __future__ import annotations
@@ -42,12 +42,21 @@ MANIFEST_NAME = "problem_bundle_manifest.json"
 PAYLOAD_PREFIX = "payload"
 PROJECT_ROOT_FILES = {"README.md", "research_state.md", "goal.md", "progress.md", "subgoal.md"}
 PROJECT_PRIVATE_DIRS = {"notes", "memory", "refs", "downloads", "handoff"}
+LEAN_PROJECTS_PARTS = ("lean", "MathDailyLean", "Projects")
 DATED_NOTE_RE = re.compile(r"^20\d{2}-\d{2}-\d{2}\.md$")
 PROJECT_SLUG_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 INBOX_REFERENCE_RE = re.compile(
     r"(?<![A-Za-z0-9_./-])(?:(?:\.\.[/\\])*)inbox[/\\][^\s`\"'()<>\[\]{}]+"
 )
-EXCLUDED_DIR_NAMES = {".git", ".lancedb", "__pycache__"}
+EXCLUDED_DIR_NAMES = {
+    ".cache",
+    ".elan",
+    ".git",
+    ".lake",
+    ".lancedb",
+    "__pycache__",
+    "lake-packages",
+}
 EXCLUDED_SUFFIXES = {
     ".aux",
     ".bbl",
@@ -166,6 +175,12 @@ def _allowed_payload_path(path: PurePosixPath, slug: str) -> bool:
         return len(path.parts) >= 3 and path.parts[1] in PROJECT_PRIVATE_DIRS
     if path.parts[0] == "inbox":
         return len(path.parts) >= 2 and path.as_posix() != "inbox/README.md"
+    if (
+        len(path.parts) >= 5
+        and tuple(path.parts[:3]) == LEAN_PROJECTS_PARTS
+        and path.parts[3] == slug
+    ):
+        return path.suffix.lower() == ".lean"
     return False
 
 
@@ -175,7 +190,7 @@ def _excluded_reason(path: Path, root: Path) -> str | None:
     if path.name in EXCLUDED_FILE_NAMES:
         return "framework placeholder or operating-system metadata"
     if path.name.endswith(".reader.md"):
-        return "generated reader copy; regenerate from the formal source"
+        return "legacy generated reader copy; excluded from the cloud workflow"
     if any(part in EXCLUDED_DIR_NAMES or part.endswith(".lancedb") for part in lowered):
         return "generated local index or cache"
     if any(part.endswith(".extracted") for part in lowered):
@@ -264,6 +279,14 @@ def collect_candidates(
         relative = _validate_relative_path(value)
         selected_roots.append((repo_root.joinpath(*relative.parts).resolve(), "inbox-reference"))
 
+    lean_source_root = repo_root.joinpath(*LEAN_PROJECTS_PARTS, slug)
+    if lean_source_root.exists():
+        if not lean_source_root.is_dir():
+            raise BundleError(
+                f"Problem-specific Lean source path is not a directory: {lean_source_root}"
+            )
+        selected_roots.append((lean_source_root, "lean-source"))
+
     explicit_inbox: list[str] = []
     for raw in inbox_values:
         normalized = raw.replace("\\", "/").strip()
@@ -286,6 +309,14 @@ def collect_candidates(
                 raise BundleError(f"Selected file leaves repository root: {path}")
             reason = _excluded_reason(path, selected_root if selected_root.is_dir() else path.parent)
             relative = _portable_relative(path, repo_root)
+            if category == "lean-source" and path.suffix.lower() != ".lean":
+                excluded.append(
+                    {
+                        "path": relative,
+                        "reason": "only problem-specific .lean source files are portable",
+                    }
+                )
+                continue
             if reason:
                 excluded.append({"path": relative, "reason": reason})
                 continue
@@ -369,8 +400,15 @@ def export_bundle(
     destination = (output or repo_root / "tmp" / "problem_bundles" / f"{slug}-{stamp}.zip").resolve()
     project_root = (repo_root / slug).resolve()
     inbox_root = (repo_root / "inbox").resolve()
-    if _inside(destination, project_root) or _inside(destination, inbox_root):
-        raise BundleError("Bundle output must stay outside the selected problem and inbox directories")
+    lean_source_root = repo_root.joinpath(*LEAN_PROJECTS_PARTS, slug).resolve()
+    if (
+        _inside(destination, project_root)
+        or _inside(destination, inbox_root)
+        or _inside(destination, lean_source_root)
+    ):
+        raise BundleError(
+            "Bundle output must stay outside the selected problem, inbox, and Lean source directories"
+        )
     if destination.exists() and not overwrite_output:
         raise BundleError(f"Bundle output already exists: {destination}")
 
@@ -671,6 +709,10 @@ def _print_manifest_summary(manifest: dict[str, Any], *, verified: bool) -> None
     print(f"Payload: {_human_bytes(int(totals.get('bytes', 0)))}")
     print(f"Referenced inbox files: {len(manifest.get('referenced_inbox', []))}")
     print(f"Explicit inbox additions: {len(manifest.get('explicit_inbox', []))}")
+    print(
+        "Lean source files: "
+        f"{sum(entry.get('category') == 'lean-source' for entry in manifest.get('files', []))}"
+    )
     print(f"Excluded generated files: {totals.get('excluded_files', len(manifest.get('excluded', [])))}")
     print(f"Integrity: {'verified' if verified else 'not computed (dry run)'}")
 

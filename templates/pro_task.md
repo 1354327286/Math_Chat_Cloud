@@ -28,12 +28,14 @@ Use this packet to begin an iterative mathematical research conversation about t
 
 Only when the user explicitly asks for a `final research handoff`, `最终交接稿`, or an equivalent final consolidation, return one self-contained Markdown document using every section in the contract below. The final document should incorporate the useful parts of the whole conversation, not merely summarize the most recent reply.
 
+Throughout the discussion and final handoff, state the exact mathematical consequence and its applicability at every load-bearing use of a theorem number, equation tag, or file locator. The reader must not need to open another file to learn what an input asserts.
+
 ## Final Research Handoff Contract
 
 1. `Verdict`: proved, partially proved, inconclusive, or probably false, with confidence.
 2. `Precise Restatement and Assumptions`.
 3. `Proof or Main Argument`, with the key logical steps visible.
-4. `Dependency Audit`: external results used, exact hypotheses, source or theorem number when known, and verification status.
+4. `Dependency Audit`: external and local results used, each exact statement, exact hypotheses, applicability, source or theorem number when known, and verification status; no tag-only dependencies.
 5. `Gap Audit`: missing implications, definition mismatches, finiteness or convergence issues, and any unverified steps.
 6. `Counterexample and Toy-Case Checks`.
 7. `Failed or Unproductive Routes Worth Recording`.

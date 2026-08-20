@@ -36,8 +36,20 @@ class CloudPortabilityTests(unittest.TestCase):
         self.assertTrue((root / "scripts" / "bootstrap_cloud.sh").is_file())
         self.assertTrue((root / "scripts" / "cloud_research_report.py").is_file())
         self.assertTrue((root / "scripts" / "bootstrap_lean.sh").is_file())
+        self.assertTrue((root / "scripts" / "run_lean.sh").is_file())
+        self.assertTrue((root / "scripts" / "build_tex.py").is_file())
         self.assertTrue((root / "docs" / "cloud_workflow.md").is_file())
         self.assertTrue((root / "docs" / "research_state_workflow.md").is_file())
+
+    def test_startup_reads_only_compact_state_and_one_dated_note(self):
+        root = Path(__file__).resolve().parents[1]
+        agents = (root / "AGENTS.md").read_text(encoding="utf-8")
+        startup = agents.split("## Session Startup", 1)[1].split("## Mathematical Standards", 1)[0]
+        self.assertIn("research_state.md", startup)
+        self.assertIn("today's", startup)
+        self.assertIn("otherwise the most", startup)
+        self.assertIn("Do not preload `goal.md`", startup)
+        self.assertIn("whole `memory/` tree", startup)
 
 
 if __name__ == "__main__":

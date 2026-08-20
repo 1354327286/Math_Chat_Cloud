@@ -16,6 +16,8 @@ class LeanScaffoldTests(unittest.TestCase):
             "lean/MathDailyLean.lean",
             "lean/MathDailyLean/Common/Basic.lean",
             "scripts/bootstrap_lean.sh",
+            "scripts/run_lean.sh",
+            "scripts/lean_proc_self_exe_shim.c",
         ]
         for relative in required:
             self.assertTrue((ROOT / relative).is_file(), relative)
@@ -45,6 +47,13 @@ class LeanScaffoldTests(unittest.TestCase):
         )
         self.assertIn("--install)", script)
         self.assertIn('mode="${1:---check}"', script)
+
+    def test_runtime_wrapper_reactivates_each_shell(self):
+        wrapper = (ROOT / "scripts" / "run_lean.sh").read_text(encoding="utf-8")
+        self.assertIn('export PATH="$distribution/bin:$PATH"', wrapper)
+        self.assertIn("exec lake build", wrapper)
+        self.assertIn('exec lake env lean "$2"', wrapper)
+        self.assertIn("bootstrap_lean.sh", wrapper)
 
 
 if __name__ == "__main__":

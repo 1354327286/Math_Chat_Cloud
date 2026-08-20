@@ -82,6 +82,12 @@ chat context, or instructions to inspect GitHub. Pro receives only the brief,
 as the temporary project Source `CURRENT_PRO_HANDOFF.md`. Do not add the
 repository to project Sources merely for this handoff.
 
+Follow `docs/mathematical_artifact_standard.md`. Every established input, gap,
+and requested implication must be stated mathematically in the brief. Never ask
+Pro or the user to open an internal claim name, file path, or TeX label to learn
+what it asserts. At every load-bearing reuse, include the exact consequence and
+applicability in the same local passage.
+
 Let the user continue the mathematical dialogue directly in the Pro chat. Do
 not impose an artificial turn limit on that user-driven discussion. At the end,
 have Pro return copy-ready final Markdown or one file for the user to bring back
@@ -147,6 +153,8 @@ python scripts/pro_handoff.py status <problem_dir>
 - A user-facing Pro chat is not confused with a subagent thread.
 - The target, scope, sources, forbidden substitutions, and acceptance criteria are explicit.
 - The Pro brief is self-contained and requires no repository access.
+- Every load-bearing result is accompanied by its usable mathematical statement;
+  clickability is not required for comprehension.
 - Only one fixed-slot handoff is active, and it is removed after audit.
 - Any optional Codex-agent debate is labeled non-Pro and has a four-response cap.
 - User-driven Pro discussion remains open-ended and user-controlled.

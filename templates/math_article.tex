@@ -1,0 +1,113 @@
+% math-article-template: 1
+% Replace every instructional sentence before delivery.
+% The same source is used for review and final publication.
+% Set \draftpaperfalse after review to hide the draft date/version and line numbers.
+\newif\ifdraftpaper
+\draftpapertrue
+
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,margin=30mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype}
+\usepackage{xcolor}
+\ifdraftpaper
+  \usepackage[mathlines]{lineno}
+\fi
+\usepackage[
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  citecolor=green!35!black,
+  urlcolor=blue!65!black
+]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\paperversion}{0.1}
+\title{Replace with a mathematical title}
+\author{Replace with the author name}
+\ifdraftpaper
+  \date{Draft \paperversion\ --- \today}
+\else
+  \date{}
+\fi
+
+\begin{document}
+\maketitle
+\ifdraftpaper
+  \linenumbers
+\fi
+
+\begin{abstract}
+State the main result, principal hypotheses, method, and significance in a
+self-contained paragraph. Use only terminology defined in the paper or
+standard for the intended audience.
+\end{abstract}
+
+\section{Introduction}
+
+Explain the mathematical problem and its context without referring to project
+history or drafting chronology. State what is new, why the result matters, and
+the precise scope of the paper.
+
+\begin{theorem}[Main theorem]\label{thm:main}
+State the exact main theorem with all hypotheses and quantifiers.
+\end{theorem}
+
+Give a compact proof strategy that names the actual mathematical mechanisms.
+End the introduction with a short description of the paper's logical
+organization.
+
+\section{Conventions and notation}
+
+Fix the ambient categories, base objects, variance, finiteness and completeness
+hypotheses, and nonstandard notation. Define every abbreviation before use and
+use each symbol consistently.
+
+\section{Preliminaries and external inputs}
+
+State only the definitions and results genuinely needed later. For each
+external result, give its exact usable statement, a precise citation, and the
+bridge from its hypotheses to the objects of this paper.
+
+\begin{proposition}[Descriptive name of an external input]\label{prop:external}
+State the complete consequence used in the main argument.
+\end{proposition}
+
+\section{Main argument}
+
+Introduce each lemma by explaining its purpose and connection to the main
+theorem. Avoid new terminology for a construction used only once.
+
+\begin{lemma}[Descriptive structural lemma]\label{lem:structural}
+State the complete structural lemma.
+\end{lemma}
+
+\begin{proof}
+Give the proof, with every map, comparison, and change of ambient category made
+explicit when it carries mathematical content.
+\end{proof}
+
+\section{Proof of the main theorem}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+State the consequences of Proposition~\ref{prop:external} and
+Lemma~\ref{lem:structural} being applied, verify their hypotheses in the
+present setting, complete the argument, and identify the conclusion of
+Theorem~\ref{thm:main} explicitly.
+\end{proof}
+
+% Include only references actually used. Give exact theorem or definition
+% locators in the prose where each source enters.
+% \begin{thebibliography}{9}
+% \bibitem{source-key} Author, \emph{Title}, version, publication data.
+% \end{thebibliography}
+
+\end{document}

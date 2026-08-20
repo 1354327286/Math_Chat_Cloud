@@ -13,6 +13,8 @@ For one project registered in the merged public/local registry, export includes:
 - `research_state.md`, `goal.md`, `progress.md`, and `subgoal.md` when present;
 - dated root notes such as `2026-08-07.md`;
 - `notes/`, `memory/`, `refs/`, `downloads/`, and `handoff/`;
+- `.lean` source files under
+  `lean/MathDailyLean/Projects/<problem_name>/` for this problem only;
 - existing `inbox/` files referenced anywhere in those Markdown files;
 - any additional `inbox/` files or directories explicitly named with `--inbox`.
 
@@ -22,9 +24,12 @@ inbox reference stops export instead of silently producing an incomplete
 bundle. Unreferenced inbox material is not included.
 
 The exporter excludes public framework files already supplied by Git, `.gitkeep`,
-LanceDB and extracted-reference caches, Python/LaTeX intermediates, and generated
-`.reader.md` companions. Reference PDFs, source archives, formal TeX manuscripts,
-compiled PDFs, catalog files, and handoff evidence remain included.
+LanceDB and extracted-reference caches, Python/LaTeX intermediates, legacy
+generated reader companions, Lean/Lake build products, Mathlib packages, and the Lean
+runtime. Only `.lean` files from the selected problem's exact Lean module
+directory are accepted; another problem's Lean directory is never included.
+Reference PDFs, source archives, formal TeX manuscripts, compiled PDFs, catalog
+files, and handoff evidence remain included.
 
 The ZIP manifest records repository-relative paths, byte sizes, SHA-256 hashes,
 file modification times, project metadata, the current Git commit/branch/remote,
@@ -33,6 +38,12 @@ changes; it is not a signature and does not prove who created the archive.
 
 Problem bundles are not encrypted. Store or transmit unpublished research bundles
 through an appropriately private or encrypted channel.
+
+The public repository ignores everything below
+`lean/MathDailyLean/Projects/` except its tracked `README.md`. The public-scope
+checker independently rejects problem-specific Lean source even if it is
+force-added to Git. Public framework files, `lean-toolchain`,
+`lake-manifest.json`, and `lakefile.toml` remain supplied by the repository.
 
 ## Clarify the transport operation
 
@@ -147,13 +158,22 @@ incompatible mathematical conclusions or ambiguous provenance. After approved
 manual reconciliation, use `restore ... --keep-existing` to retain the merged
 local files while adding any remaining missing bundle files.
 
+Treat differing `.lean` source files the same way: inspect both versions and
+reconcile declarations and proof dependencies before choosing an overwrite
+policy. A successful compile of one side is not by itself a reason to discard
+the other side.
+
 After restoration, validate references and regenerate disposable reader copies
 when relevant:
 
 ```bash
 python scripts/check_reference_catalog.py sample_problem/refs/catalog.json --check-files
-python scripts/generate_tex_reader.py sample_problem/notes/proof.tex
+bash scripts/run_lean.sh status
 ```
+
+If the pinned Lean environment is already installed, also compile the restored
+problem modules using the audit commands in `lean/AGENTS.md`. The problem bundle
+does not install or update Lean.
 
 Avoid editing the same private problem state independently in multiple workspaces.
 The bundle is a transport and integrity format, not a multi-writer merge system.

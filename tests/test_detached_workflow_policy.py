@@ -76,6 +76,33 @@ class DetachedWorkflowPolicyTests(unittest.TestCase):
         self.assertIn("allow_implicit_invocation: false", ui)
         self.assertIn("$lean-formalization", ui)
 
+    def test_lean_requires_a_complete_pre_run_contract(self):
+        agents = read("AGENTS.md")
+        lean_agents = read("lean/AGENTS.md")
+        skill = read("skills/lean-formalization/SKILL.md")
+        compact_skill = " ".join(skill.split())
+        template = read("skills/lean-formalization/assets/formalization_plan.md")
+        ui = read("skills/lean-formalization/agents/openai.yaml")
+
+        self.assertIn("Before each new Lean formalization campaign", agents)
+        self.assertIn("## Resolve the pre-run contract", skill)
+        self.assertIn("`sorry-free`", skill)
+        self.assertIn("`provenance-complete`", skill)
+        self.assertIn("`internally-closed`", skill)
+        self.assertIn("original component theorems", compact_skill)
+        self.assertIn("formalize the combination as a local lemma", compact_skill)
+        self.assertIn("`persistent-goal`", skill)
+        self.assertIn("model and reasoning effort for every role", compact_skill)
+        self.assertIn(
+            "Do not spawn anything until every field is fixed", compact_skill
+        )
+        self.assertIn("## Accepted Execution Contract", lean_agents)
+        self.assertIn("full printed declaration signature", lean_agents)
+        self.assertIn("## Pre-run execution contract", template)
+        self.assertIn("Do not write implementation code", template)
+        self.assertIn("model, reasoning effort", template)
+        self.assertIn("acceptance/provenance profile", ui)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -20,6 +20,7 @@ tmp/
 
 # Private project registry overlay. The tracked projects.json is examples only.
 /projects.local.json
+/private_terms.local.txt
 
 .lancedb/
 *.lancedb/
@@ -84,3 +85,7 @@ Thumbs.db
 !/skills/
 !/templates/
 !/tests/
+
+# Private problem-specific Lean sources travel in problem bundles, not Git.
+/lean/MathDailyLean/Projects/**
+!/lean/MathDailyLean/Projects/README.md

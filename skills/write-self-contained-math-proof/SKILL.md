@@ -1,11 +1,15 @@
 ---
 name: write-self-contained-math-proof
-description: Clarify and turn a mathematically closed result from the selected problem's research state into a self-contained proof for human or external-LLM review. Use when the user asks Codex to write, present, export, or polish a standalone proof based on current project progress. Resolve material ambiguity about the statement and deliverable before drafting, and generate the proof only after every dependency is closed.
+description: Clarify and turn a mathematically closed result from the selected problem's research state into a self-contained, human-readable proof for human or external-LLM review. Use when the user asks Codex to write, present, export, or polish a standalone proof or review article based on current project progress. Resolve material ambiguity before drafting, require every dependency to be closed, state every load-bearing consequence locally, and use the repository's standard article template for a new paper-length export unless another house style is fixed.
 ---
 
 # Write A Self-Contained Math Proof
 
 Write a proof document that stands on its own. Treat project memory as source material, not as the structure or voice of the final exposition.
+
+Read and enforce `docs/mathematical_artifact_standard.md`. A correct hyperlink,
+file locator, or statement label never compensates for an unstated mathematical
+assertion.
 
 ## Resolve the standalone deliverable
 
@@ -16,6 +20,9 @@ Before drafting or creating a proof file, identify:
 - the intended reader and assumed background;
 - the requested form, such as chat proof, Markdown, LaTeX, article section, or
   external-review packet;
+- whether a paper-length export should use the repository template or an
+  existing user/publisher house style, and whether draft line numbers should
+  remain enabled for review;
 - the destination and any length, style, or citation requirements.
 
 Use recent discussion when it fixes these fields uniquely. If a material field
@@ -45,7 +52,10 @@ different theorem.
 
 ## Gather The Mathematics
 
-1. Read the selected problem's `research_state.md`, `goal.md`, `progress.md`, `subgoal.md`, latest daily note, and only the memory and reference files relevant to the target.
+1. Start with the selected problem's `research_state.md` and today's dated note,
+   or the most recent dated note when today's file is absent. Then open only the
+   linked proof, memory, and reference files needed to verify the target's full
+   dependency chain.
 2. Extract the final logical dependency chain rather than reproducing the chronology of discovery.
 3. Use only established ingredients that passed the eligibility gate.
 4. Recover the exact statement and hypotheses of every material external result.
@@ -59,7 +69,7 @@ Use this order unless the mathematics clearly calls for a small variation:
 2. **Statement**: Give the exact theorem with all hypotheses and quantifiers.
 3. **Setup and notation**: Define nonstandard objects, conventions, and symbols before they carry argumentative weight.
 4. **Proof roadmap**: Explain the main mechanism and dependency chain in one compact paragraph.
-5. **Lemmas and propositions**: State each intermediate result before proving or citing it. Give stable descriptive labels.
+5. **Lemmas and propositions**: State each intermediate result before proving or citing it. Give descriptive names and ordinary theorem numbers.
 6. **Main proof**: Connect the lemmas in logical order and explicitly close the stated conclusion.
 7. **References**: List only sources actually used, with theorem numbers or locations when available.
 
@@ -134,6 +144,11 @@ Use this order unless the mathematics clearly calls for a small variation:
 - Use paragraphs with one mathematical purpose. Prefer connected prose over a dump of bullets or status records.
 - Use displayed equations for structural identities and align multi-step calculations when alignment clarifies the argument.
 - Refer to labeled statements instead of vague phrases such as `the previous result` when more than one result could be meant.
+- Treat ordinary theorem numbers and TeX labels as secondary locators. On every
+  load-bearing use, name the result and state the exact consequence being
+  applied in the same paragraph. Do not write a proof step whose mathematical
+  content can be recovered only by opening a file, following a link, or looking
+  up an internal claim name.
 - Do not insert research confidence labels into the proof prose.
 - Avoid `clearly`, `obviously`, and `standard` when they conceal a nontrivial inference. Give the argument or an exact citation.
 - Do not over-explain routine algebra that the intended reader can reconstruct, but never omit a step on which validity depends.
@@ -150,11 +165,38 @@ Perform a final pass using only the drafted document, without mentally supplying
 6. Does the final paragraph prove exactly the theorem stated at the beginning?
 7. Could another capable LLM review the document without receiving any local project file?
 8. Is the proof free of unresolved dependencies and hidden appeals to project memory?
+9. Does every load-bearing theorem reference have its usable statement or exact
+   consequence in the same local passage?
+10. Can a revision be located by section, theorem or equation number, PDF page
+    or draft line number, and a quoted phrase?
+
+Then perform the terminology and reader-confusion audit from
+`docs/mathematical_artifact_standard.md`. In particular, identify every term not
+obviously standard in the field and either verify its established use, define it
+as genuinely new terminology, or replace it with a direct mathematical
+description. Read the draft linearly as a first-time reader and revise ambiguous
+pronouns, unexplained notation, unmotivated lemmas, abrupt abstraction changes,
+overloaded sentences, and paragraphs whose logical role is not apparent. Do not
+delegate this quality control to the user through repeated post-delivery fixes.
 
 If any audit item fails mathematically, do not deliver the document with a caveat. Return to the research workflow until the proof closes. Otherwise revise the exposition until the readability checks pass.
 
 ## Delivery And Persistence
 
 Return the proof itself, not a summary of how it was assembled. For persistent project work or a long proof, save it under `<problem_dir>/notes/` with a descriptive dated filename unless the user requests chat-only output or another location.
+
+For a new paper-length proof or exported review draft without a fixed external
+style, copy `templates/math_article.tex`. The review and final versions use the
+same mathematical source: draft mode adds only the version/date and line
+numbers, and final mode disables them. Do not expose workflow status, issue
+tracking, dependency audits, or proof-search history in the paper. Do not
+migrate an existing manuscript or publisher submission to this template without
+authorization.
+
+In Work cloud, the standard export consists of the authoritative `.tex` and a
+compiled and visually inspected PDF. Build with
+`python scripts/build_tex.py <source.tex> --strict`, inspect the rendered pages,
+and report the final warnings and pages checked. Do not generate or maintain a
+Markdown copy of the manuscript.
 
 Do not update research memory merely because existing mathematics was rewritten. If the eligibility audit uncovers a new mathematical issue, record it in the appropriate detailed memory file and do not produce the review proof yet.

@@ -1,6 +1,6 @@
 ---
 name: review-latex-math-manuscript
-description: Clarify, compile, validate, and visually inspect a mathematical LaTeX manuscript after edits or before external review. Use for `.tex` build verification, warning and cross-reference audits, changed-page PDF inspection, structural renumbering checks, and an explicitly requested generated `.reader.md` companion. Resolve material ambiguity about the authoritative source, diagnosis-versus-edit scope, and deliverables before building or editing.
+description: Clarify, compile, validate, and visually inspect a mathematical LaTeX manuscript after edits or before external review. Use for `.tex` build verification, warning and cross-reference audits, changed-page PDF inspection, structural renumbering checks, and exported-draft self-containment and human-readability audits. Resolve material ambiguity about the authoritative source, diagnosis-versus-edit scope, and deliverables before building or editing.
 ---
 
 # Review A LaTeX Math Manuscript
@@ -9,14 +9,18 @@ Treat the reviewed `.tex` file as the source artifact.  Verify both the
 logical structure exposed by LaTeX and the rendered PDF; a successful process
 exit alone is not a completed review.
 
+Read `docs/mathematical_artifact_standard.md` when the manuscript is an exported
+proof/review draft or the user asks for a self-containment or readability audit.
+
 ## Establish The Review Scope
 
 1. Identify the authoritative `.tex` source, its working directory, build
    directory, and expected PDF.
 2. Determine whether the request is diagnosis-only or authorizes corrections,
    and whether mathematical correctness is in or out of scope.
-3. Determine the required deliverables: report, corrected source, PDF, changed
-   page renders, and an explicitly requested `.reader.md` companion.
+3. Determine whether this is an existing manuscript or a new exported review
+   draft, and the required deliverables: report, corrected source, PDF, and
+   changed page renders.
 4. Determine which source regions changed and which numbered statements,
    equations, citations, or section boundaries they can affect.
 5. Preserve unrelated user edits and existing public DOI, arXiv, Stacks Tag,
@@ -27,18 +31,25 @@ Use recent discussion when it uniquely fixes these fields. If more than one
 source, review purpose, edit boundary, or output is reasonably possible, ask a
 focused question before compiling, generating files, or editing. Read-only
 source discovery is allowed while waiting. Do not silently select the newest
-`.tex`, expand diagnosis into edits, or generate a reader companion. A complete
+`.tex` or expand diagnosis into edits. A complete
 request that explicitly asks to proceed needs no redundant confirmation.
+
+For a new paper-length export with no fixed style, use
+`templates/math_article.tex`. Review and final delivery use the same source;
+draft mode adds only a version/date and line numbers. Do not migrate an existing
+manuscript or publisher template merely to standardize its appearance.
 
 ## Compile To A Stable PDF
 
-Run `latexmk` from the source directory so bibliography and repeated LaTeX
-passes are handled automatically.  Prefer a dedicated build directory:
+In Work cloud, use the repository builder so temporary formats, repeated passes,
+final-log checks, and page rendering are handled consistently:
 
 ```bash
-latexmk -pdf -interaction=nonstopmode -halt-on-error \
-  -outdir=<build_dir> <source.tex>
+python scripts/build_tex.py <source.tex> --strict
 ```
+
+For an external manuscript whose build system cannot be represented by this
+entry point, preserve and run its documented build command instead.
 
 After the final pass, inspect the final log rather than the first-pass output.
 Search at least for:
@@ -66,6 +77,32 @@ After moving, splitting, merging, or renumbering mathematical material:
    not merely an automatically valid but semantically stale label.
 5. Run `git diff --check` when the manuscript is in a Git worktree.
 
+## Audit Human Readability
+
+For an artifact intended to leave the current chat, audit the prose rather than
+only the cross-reference graph:
+
+1. Find each load-bearing use of a theorem, lemma, equation, local claim ID, or
+   file locator.
+2. Require the same local passage to name the result and state the exact
+   consequence used. A bare `\ref`, internal claim name, or path-plus-label is
+   a defect even when the link resolves.
+3. Confirm that ordinary section, theorem, equation, page, and draft line
+   locators are sufficient to identify requested corrections; do not add a
+   second project-specific ID system.
+4. Perform the cold-read audit using only the rendered artifact. Do not supply
+   definitions or dependencies mentally from chat or repository memory.
+5. Treat clickability as optional navigation. No sentence may require opening a
+   second file merely to recover the assertion it uses.
+6. Audit terminology independently of correctness. Flag a phrase that was
+   coined by the draft but presented as standard, a project label disguised as
+   mathematical vocabulary, or a one-use abstraction that makes the reader
+   translate notation without simplifying the proof.
+7. Read linearly for reader confusion: undefined abbreviations, symbol drift,
+   ambiguous pronouns, forward dependencies, unmotivated lemmas, abrupt changes
+   of abstraction, overloaded sentences, and paragraphs with no clear logical
+   role. Revise every material finding before delivery.
+
 ## Inspect The Rendered Pages
 
 Use `pdfinfo` and `pdftoppm` from the bundled workspace dependencies or the
@@ -87,25 +124,10 @@ transition.  Recompile and rerender after any correction.
 Keep render intermediates under `tmp/pdfs/` or another explicit temporary
 directory.  Do not present scratch PNGs as final artifacts.
 
-## Maintain A Reader Companion Only On Request
-
-When the repository provides `scripts/generate_tex_reader.py` and the user
-explicitly asks for a local reading copy:
-
-- keep the `.tex` manuscript as the sole editable source of truth;
-- generate the sibling `.reader.md`; never hand-edit it;
-- regenerate it after source changes and require the hash check to pass.
-
-```bash
-python scripts/generate_tex_reader.py <problem_dir>/notes/proof.tex
-python scripts/generate_tex_reader.py <problem_dir>/notes/proof.tex --check
-```
-
-Do not create a reader companion merely because a TeX file exists.
-
 ## Report Completion
 
 State the authoritative source, output PDF, page count, final warning count,
-pages visually inspected, affected numbering, and reader status when
-applicable.  Distinguish a clean compile from a completed visual review and
-from a mathematical correctness audit.
+pages visually inspected, and affected numbering. Report the cold-read and
+statement-first audit separately when the artifact standard applies.
+Distinguish a clean compile from a completed visual
+review, a human-readability audit, and a mathematical correctness audit.
