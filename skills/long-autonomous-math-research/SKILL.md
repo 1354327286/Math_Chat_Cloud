@@ -86,6 +86,12 @@ prior route and the materially new lemma, construction, source, invariant,
 certificate, or scope. Do not reopen a closed route with only new notation or a
 fresh agent.
 
+Before resuming from a checkpoint, reread the current goal and relevant evidence
+for retractions, withdrawn premises, or a user pause. A checkpoint or newer
+timestamp cannot override these. If the frozen contract no longer matches the
+authorized target, resolve the change with the user before continuing; do not
+reopen a paused run or withdrawn route merely because a resume instruction exists.
+
 ## Work in waves
 
 Start with genuinely different mathematical mechanisms. For each route:

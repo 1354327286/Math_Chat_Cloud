@@ -7,7 +7,7 @@
 把仓库和所需私有研究状态提供给 ChatGPT Work 后，可以直接发：
 
 ```text
-继续 sample_problem。请先读 sample_problem/research_state.md、sample_problem/goal.md、sample_problem/progress.md、sample_problem/subgoal.md、最近日期笔记和 sample_problem/memory/，总结当前状态。然后围绕我下面的问题推进：...
+继续 sample_problem。请先读 research_state.md 和 subgoal.md；核对 goal.md 的目标与假设，读取 progress.md 最近 3–5 条完整日期记录及最新笔记的相关段落，再按证据链接定向回查 memory/。总结当前状态，然后围绕我下面的问题推进：...
 
 要求：
 - 数学结论标注置信度；
@@ -33,7 +33,7 @@ bash scripts/bootstrap_cloud.sh
 
 Work 云端任务可以使用当前工作区文件、已授权插件和工具并运行 Linux 命令，但不能假定可以访问你电脑上的磁盘、浏览器会话、凭证管理器、Ollama 或其他本机仓库。云端工作目录也不应被当作永久存储：一次任务内以仓库文件为准，跨任务内容必须写入明确授权的 GitHub 目标，或作为可下载文件/问题包交付。
 
-公开仓库只保存框架和一个虚构示例；真实 `projects.local.json`、真实问题目录、`research_state.md`、日期笔记、`memory/`、`refs/` 和 `handoff/` 都必须通过私有问题包装载。缺失时，Work 应明确说明只有公开框架，不能把它当作最新研究状态。完整说明见 [ChatGPT Work 云端运行约定](docs/cloud_workflow.md)。
+公开仓库只保存框架和一个虚构示例；真实 `projects.local.json`、真实问题目录、`research_state.md`、日期笔记、`memory/`、`refs/`、`email/` 和 `handoff/` 都必须通过私有问题包装载。缺失时，Work 应明确说明只有公开框架，不能把它当作最新研究状态。完整说明见 [ChatGPT Work 云端运行约定](docs/cloud_workflow.md)。
 
 ## 目录结构
 
@@ -54,6 +54,7 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
 │   └── MathDailyLean/
 ├── templates/
 │   ├── research_state.md
+│   ├── subgoal_plan.md
 │   ├── pro_task.md
 │   └── pro_review.md
 └── example_math_problem/
@@ -72,6 +73,7 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
     ├── memory/
     ├── refs/
     ├── downloads/
+    ├── email/
     └── handoff/
 ```
 
@@ -81,9 +83,12 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
 | --- | --- |
 | `AGENTS.md` | 给 ChatGPT Work 读取的 agent 行为指令 |
 | `docs/research_state_workflow.md` | 状态文件职责、新项目创建和收尾顺序 |
+| `docs/state_compaction.md` | 经明确同意后无损整理导航页，保留原始字节与证据链接 |
+| `docs/email_workflow.md` | 私有通信、版本化贡献归属和定稿前义务核查 |
 | `projects.json` | 公开示例登记表；只能包含明确允许公开的虚构示例 |
 | `projects.local.json` | 真实项目登记表；本地生成、被 Git 忽略并由问题包迁移 |
 | `templates/research_state.md` | 新建问题目录时使用的统一状态模板 |
+| `templates/subgoal_plan.md` | 当前子目标、依赖、证据、阻碍与重启条件模板 |
 | `docs/reference_workflow.md` | PDF、TeX、TXT 后备、版本与校验信息的统一规范 |
 | `inbox/` | 跨问题、尚未确定归属或尚未整理的外部材料入口 |
 | `lean/` | 与主项目共享 Git 历史的 Lean/Lake 子项目；内部规则见 `lean/AGENTS.md` |
@@ -95,6 +100,8 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
 | `<problem_dir>/YYYY-MM-DD.md` | 每日研究笔记 |
 | `<problem_dir>/memory/` | 推论、例子、反例、失败路径、搜索结果等结构化记忆 |
 | `<problem_dir>/refs/` | PDF、论文笔记、提取文本和本地索引 |
+| `<problem_dir>/email/` | 私有联系人、通信原文、附件、贡献与义务索引 |
+| `<problem_dir>/notes/<manuscript>/` | 稿件源文件及本文专属 THEOREM_LEDGER.md、PAPER_PLAN.md |
 
 ## 状态页与详细记录
 
@@ -111,10 +118,24 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
 
 数学结论、证据和历史以详细文件为准；当前工作快照以 `research_state.md` 为准。有实质进展时，先更新详细文件，再刷新状态页。状态页只写摘要并链接详情，不复制长证明和完整搜索记录。
 
+### 导航页无损整理
+
+`research_state.md` 和 `subgoal.md` 分别按 250 行 / 24 KiB 的建议预算维护。只有单个文件超过 24,576 字节，并且已经记录实质里程碑时，才提出整理建议；超过行数本身不会触发整理。提出建议不等于获准修改，必须先明确同意具体文件，才开始草拟、归档或改写。
+
+同意后先逐字节备份原文并验证 SHA-256，再保留完整数学内容、稳定链接与锚点、失败路线及重启条件、暂停和撤回记录。`progress.md`、日期笔记和 `memory/` 不会自动压缩。检查器只读检查导航，不认证证明，也不发送提醒：
+
+```bash
+python scripts/check_research_state.py sample_problem --check-links
+python scripts/check_research_state.py sample_problem --file subgoal.md --check-links
+python scripts/check_research_state.py sample_problem --milestone "已记录的具体进展"
+```
+
+完整规则见 [无损状态整理](docs/state_compaction.md)。维护日期与数学审查日期分开记录，不能把文件变短当作重新验证了数学。
+
 ## 日常工作流
 
-1. 开始会话时，让 Work 先读 `research_state.md`，再读 `goal.md`、`progress.md`、`subgoal.md`、最近日期笔记和 `memory/`。
-2. 讨论数学问题时，要求 Work 区分“已证明”“合理猜想”“需要验证”“可能错误”。
+1. 开始会话时先读 `research_state.md` 和 `subgoal.md`，必要时核对 `goal.md`；按标题边界读取 `progress.md` 最近 3–5 条完整日期记录和最新笔记的相关段落，再定向回查证据。出现矛盾就扩展检索；时间更新不代表数学判断更可靠。
+2. 讨论数学问题时，区分“已证明”“条件性”“合理猜想”“需要验证”“可能错误”和实际反例；标明自审、独立审查或形式验证。撤回的前提和用户暂停不能被旧检查点覆盖，失败路线仅在指定重启条件满足时重开。
 3. 有重要结论、反例、失败路径或文献线索时，让 Work 写回当前问题目录下的相应文件；跨两个问题的讨论分别更新，不能混写。
 4. 结束前让 Work 先更新当天笔记、`progress.md` 和相关详细记录，最后刷新 `research_state.md`。
 
@@ -124,7 +145,7 @@ Work 云端任务可以使用当前工作区文件、已授权插件和工具并
 python scripts/create_math_project.py my_math_problem --title "My Math Problem" --role active --description "One-line research objective"
 ```
 
-创建前需要确定目录名、标题、精确目标与范围、项目角色、说明，以及它和已有问题的关系。如果其中有实质歧义，Work 会先只读检查并向你询问，不会先创建一个占位目录。
+脚本采用状态页和子目标模板，初始化私有 `email/` 索引、联系人与附件目录，并只写入 `projects.local.json`。创建前需要确定目录名、标题、精确目标与范围、项目角色、说明，以及它和已有问题的关系。如果其中有实质歧义，Work 会先只读检查并向你询问，不会先创建一个占位目录。
 
 ### 脱离当前讨论时的澄清边界
 
@@ -165,6 +186,16 @@ python scripts/create_math_project.py my_math_problem --title "My Math Problem" 
 ```bash
 python scripts/check_autonomous_runs.py <problem_dir>
 ```
+
+## 论文写作与通信贡献
+
+长文写作使用 [独立证明与论文组装技能](skills/write-self-contained-math-proof/SKILL.md)，按五个阶段推进：盘点重要数学输入、设计读者路线、建立陈述骨架、分节写作与审查、全文协调。只在本文目录维护 `THEOREM_LEDGER.md` 和 `PAPER_PLAN.md`，不建立全局定理数据库；短证明与局部修订走轻量路径，并复用仍然有效的审查证据。
+
+设计结构时先试写“核心困难、关键机制、最难的章节衔接”三小段来检验主线。目录根据论证需要选择，局部定义在需要处引入；允许证明内解释与技术附录，只要关键输入及依赖清楚可见。语言修订若改变数学，必须重审受影响部分；编译或导航检查都不替代数学审查。
+
+通信材料存放在私有 `email/`：分别记录来信前已有结果、对方贡献、后续分析，以及草稿、实际发送、提议和明确协议。贡献与限制绑定具体稿件版本，不把讨论邀请自动当成合作或署名承诺。论文定稿或发布前按 [通信与贡献工作流](docs/email_workflow.md) 核对 `email/index.md`，普通编译不会反复触发完整署名检查。
+
+`email/`（包括示例目录内的邮件正文）受公开范围检查与忽略规则保护，问题包递归携带通信、附件、稿件账本和计划。发送消息、分享论文或发布仍需对应授权。
 
 ## 云端静态研究概览
 
@@ -314,6 +345,8 @@ Work 会区分两种任务：
 - **文献调研：** 当你要求查找相关结果、研究现状、后续工作、新颖性或最新版本时，本地材料只用于提取术语、作者和引用线索，即使已经存在相关 PDF 或 TeX，也会继续联网搜索。
 
 工作区参考文献是阅读缓存和研究记忆，不是联网检索的边界。明确提出“联网搜索”“查最新文献”“核对当前研究现状”或“寻找更新工作”时，Work 必须联网，不会因为工作区已有材料而停止。
+
+已完成获取且可读、版本匹配的源码/PDF 与来源及哈希记录可直接复用，不为安心重复下载或联网核对。缺失、不可读、版本冲突、疑似损坏，或明确查找新版本时才补齐对应部分；仍须阅读实际数学并检查本文的精确用法。该规则不跳过问题包传输校验、明确请求的文件检查或编辑后稿件与阅读器的一致性检查。
 
 下载和整理文献时，按 [参考文献工作流](docs/reference_workflow.md) 维护 `refs/catalog.json`，记录 arXiv 版本、主 TeX、TXT 后备、PDF、来源和 SHA-256。对 arXiv 文章，版本匹配的源码获取是必做步骤，不是可选优化。目录结构和元数据可以用以下命令检查：
 

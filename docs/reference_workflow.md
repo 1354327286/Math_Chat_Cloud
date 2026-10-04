@@ -29,6 +29,28 @@ use local files only as query seeds and continue externally. Prefer primary sour
 and record exact versions, theorem numbers, URLs or identifiers, publication status,
 applicability, and caveats in `<problem_dir>/memory/search_results.md`.
 
+## Reuse completed source acquisition
+
+For known-source reading or a citation audit, reuse the catalog's readable,
+version-matched canonical files and completed provenance/SHA-256 records.
+Acquisition means having the required source, not downloading it every time.
+Do not repeat downloads, hashes, or online cross-checks merely for reassurance.
+Still read the actual mathematics and verify the exact statement, hypotheses,
+version, numbering, and applicability for the current use.
+
+Reopen acquisition only for a concrete reason: a missing or unreadable required
+file, unresolved version or numbering conflict, suspected corruption, or an
+explicit new-source/latest-version request. State the reason and obtain only
+the missing or invalid part. A recorded source-acquisition exception remains
+subject to the same version and usability checks; an old PDF/TXT alone does
+not substitute for an unattempted arXiv source acquisition.
+
+This reuse rule does not waive transport-integrity hashing, requested
+`--check-files` validation, or consistency checks between an edited manuscript
+and its generated reader. Landscape, related-work, novelty, and latest-source
+searches still continue externally. A cache is reading evidence, not a claim
+that the literature is complete or current.
+
 ## Canonical Files
 
 - `papers/` contains the version used for final visual and theorem-number verification.
@@ -43,8 +65,8 @@ For each paper, prefer `tex_main` for discovery and structural reading. Use `txt
 For every arXiv paper selected for substantive local reading:
 
 1. Record the exact `arxiv_id` and `arxiv_version` used.
-2. Download the PDF and the source archive for that same version. An existing PDF or TXT does not waive the source requirement.
-3. Extract the archive into a paper-specific directory under `sources/` and identify the main document rather than style, generated, or macro-only files.
+2. Ensure readable PDF and source files exist for that same version; reuse completed acquisition and download only missing or invalid parts. An existing PDF or TXT does not waive the source requirement.
+3. Reuse the version-matched extracted source when readable; otherwise extract the archive into a paper-specific directory under `sources/`. Identify the main document rather than style, generated, or macro-only files.
 4. Set `tex_main` to the main searchable TeX file and use it as the default discovery representation.
 5. Verify important statements against the version-matched PDF or final published source.
 

@@ -19,8 +19,8 @@ Recover relevant prior work from the selected problem directory and explain how 
    - `memory/subgoals_state.md`
    - recent daily notes and `notes/`
 4. Use `rg --no-ignore` because problem data may be ignored by Git. Scope the search to `<problem_dir>` and exclude generated LanceDB data.
-5. Read the surrounding sections of the strongest matches rather than relying on isolated search snippets.
-6. Recheck old claims against newer dated entries and the current `research_state.md`. Preserve historical records when they have been superseded.
+5. Read complete heading-bounded sections of the strongest matches rather than isolated snippets or arbitrary line windows. During startup, use current state/subgoals and the latest 3–5 complete dated progress entries before wider backtracking.
+6. Recheck old claims against actual evidence, the current target, and explicit withdrawals or pauses. Newer dated entries and `research_state.md` help navigation; a newer timestamp does not establish validity. Preserve superseded history. Reopen a failed route only if its recorded condition is met by materially new evidence, not a fresh name or agent.
 7. Summarize the useful findings, their dates and confidence labels, and their effect on the current work.
 
 ## Output

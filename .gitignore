@@ -50,6 +50,11 @@ notes_rewritten.md
 !/*/downloads/
 !/*/downloads/.gitkeep
 
+# Private academic correspondence, including the public example workspace.
+/*/email/**
+!/*/email/
+!/*/email/.gitkeep
+
 # Drop unprocessed research reports here instead of the repository root.
 inbox/**
 !inbox/

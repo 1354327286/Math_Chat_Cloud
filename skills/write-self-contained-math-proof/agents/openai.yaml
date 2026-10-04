@@ -1,4 +1,4 @@
 interface:
   display_name: "Write Self-Contained Math Proof"
-  short_description: "Clarify and present a closed standalone math proof"
-  default_prompt: "Use $write-self-contained-math-proof to resolve the exact deliverable and present a closed result as a standalone proof for review."
+  short_description: "Write closed proofs or assemble readable manuscripts"
+  default_prompt: "Use $write-self-contained-math-proof to resolve the exact deliverable, use the lightweight path for a short proof or local edit, and assemble a long manuscript through inventory, reader route, statement skeleton, section writing/review, and global coordination. Preserve dependency closure and obtain affected independent mathematical review after substantive mathematical edits."

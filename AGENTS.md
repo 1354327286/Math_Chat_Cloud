@@ -22,14 +22,24 @@ mathematical problem, and must not be added to either project registry.
 
 ## Session Startup
 
-Before continuing a problem, read in order:
+Before continuing a problem, retrieve progressively:
 
-1. `<problem_dir>/research_state.md`
-2. `<problem_dir>/goal.md`
-3. `<problem_dir>/progress.md`
-4. `<problem_dir>/subgoal.md`
-5. the newest `<problem_dir>/YYYY-MM-DD.md`
-6. relevant `<problem_dir>/memory/` files
+1. Read `<problem_dir>/research_state.md`, then the current decomposition in
+   `<problem_dir>/subgoal.md`; follow historical sections only when relevant.
+2. Read `<problem_dir>/goal.md` when entering a problem, changing scope, or
+   resolving unclear targets or assumptions.
+3. Read the latest 3–5 complete dated entries in `<problem_dir>/progress.md`
+   and relevant sections of the newest daily note. Find heading boundaries
+   first; never truncate a dated entry at an arbitrary line limit.
+4. Follow the current claim's evidence links. Search the smallest relevant
+   set with scoped `rg --no-ignore`, excluding generated `.lancedb` indexes;
+   read complete matched sections rather than every accumulated log by default.
+
+Expand retrieval whenever scope, chronology, or evidence conflicts. A newer
+timestamp does not validate a claim. Check explicit retractions, withdrawn
+premises, changed goals, and user pauses before resuming; a checkpoint cannot
+override them. A failed route can reopen only when its recorded reopening
+condition is met by materially new evidence, not new notation or a new agent.
 
 Then give a short orientation: current goal, known progress, active obligations,
 main uncertainty, and one or two natural next moves. Missing private state means
@@ -38,18 +48,24 @@ empty skeleton as current research state.
 
 ## Mathematical Standards
 
-- Distinguish `proved`, `plausible`, `needs verification`, and `probably false`.
+- Distinguish `proved`, `conditional`, `plausible`, `needs verification`,
+  `probably false`, and an actual refutation. State unresolved assumptions for
+  every conditional result.
 - State exact hypotheses before applying a theorem and preserve type, variance,
   base, topology, finiteness, completion, and functoriality conditions.
 - Treat a user claim as a conjecture, proof obligation, definition expansion, or
   cited result as appropriate; do not silently promote it to a theorem.
 - Prefer locating the first invalid or missing step over polishing a shaky proof.
 - Record why a route failed, including the missing hypothesis, invalid
-  construction, hidden interface, counterexample, or unresolved citation.
+  construction, hidden interface, counterexample, or unresolved citation, and
+  the evidence that would permit reopening it.
 - Use toy examples and counterexample searches when they can expose which
   hypotheses do real work.
 - Never weaken the requested theorem, change the artifact, or add assumptions
   without saying so and obtaining any needed user decision.
+- External answers and correspondence are evidence, not established project
+  truth. Self-review is not independent or formal verification; record the
+  actual review level and residual uncertainty.
 
 ## Persistence and Editing
 
@@ -69,6 +85,18 @@ counterexample, failure, or source finding only in chat.
 Private research files, real project directories, and `projects.local.json` are
 intentionally ignored by Git. Do not force-add them or move them into tracked
 framework paths to bypass the public-scope policy.
+
+Keep `research_state.md` and `subgoal.md` compact navigation files without
+discarding evidence. `templates/subgoal_plan.md` supplies the recommended
+decomposition layout; existing projects need no automatic migration. Follow
+`docs/state_compaction.md` before proposing or executing compaction. Propose
+only when a named file exceeds 24,576 bytes AND a substantive milestone is
+recorded; 250 lines is advisory. Ask once for the named scope and wait for
+explicit agreement before drafting, archiving, or rewriting. Preserve original
+bytes and SHA-256, mathematical content, links, failures, pauses, and withdrawals.
+Never automatically compact progress, daily, or memory logs. The read-only
+`scripts/check_research_state.py` checks navigation, not mathematical validity,
+and cannot authorize edits or send reminders.
 
 ## Detached Work Boundary
 
@@ -98,12 +126,14 @@ rules live there rather than being duplicated in this file.
 | Trigger | Authority |
 | --- | --- |
 | Maintain state, close a session, or create a project | `docs/research_state_workflow.md` |
+| Propose or perform lossless navigation-file compaction | `docs/state_compaction.md` |
 | Run in Work cloud, generate an overview, or reason about persistence/GitHub | `docs/cloud_workflow.md` |
 | Move one private problem between workspaces | `docs/problem_bundle.md` |
 | Acquire, organize, or search references | `docs/reference_workflow.md` and `skills/search-math-results/SKILL.md` |
 | Prepare, route, or audit a Pro discussion | `skills/pro-research-handoff/SKILL.md` |
 | Write a standalone proof | `skills/write-self-contained-math-proof/SKILL.md` |
 | Review or compile a LaTeX manuscript | `skills/review-latex-math-manuscript/SKILL.md` |
+| Academic correspondence or contribution records; manuscript finalization/release | `docs/email_workflow.md`; inspect `email/index.md` for version-scoped attribution and obligations, not at every compile |
 | Formalize or verify with Lean | `skills/lean-formalization/SKILL.md`, then `lean/AGENTS.md` |
 | Run long autonomous research | `skills/long-autonomous-math-research/SKILL.md` |
 | Use another repository skill explicitly named by the user | its `skills/<name>/SKILL.md` |
@@ -111,6 +141,12 @@ rules live there rather than being duplicated in this file.
 Skill outputs belong in the selected problem's documented `memory/` destination.
 Do not claim a skill was used unless its `SKILL.md` was actually read and
 followed.
+
+Manuscript-specific ledgers and plans belong with their manuscript under
+`<problem_dir>/notes/<manuscript>/`; they are not global theorem databases or
+Lean formalization ledgers. For correspondence, distinguish draft, actually
+sent, proposed, and agreed; never treat silence as agreement or a draft as sent.
+Do not send external messages without an explicit request.
 
 ## Pro and Lean Routing Boundaries
 

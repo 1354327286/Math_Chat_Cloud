@@ -41,7 +41,7 @@ BUNDLE_TYPE = "math-research-problem"
 MANIFEST_NAME = "problem_bundle_manifest.json"
 PAYLOAD_PREFIX = "payload"
 PROJECT_ROOT_FILES = {"README.md", "research_state.md", "goal.md", "progress.md", "subgoal.md"}
-PROJECT_PRIVATE_DIRS = {"notes", "memory", "refs", "downloads", "handoff"}
+PROJECT_PRIVATE_DIRS = {"notes", "memory", "refs", "downloads", "email", "handoff"}
 DATED_NOTE_RE = re.compile(r"^20\d{2}-\d{2}-\d{2}\.md$")
 PROJECT_SLUG_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 INBOX_REFERENCE_RE = re.compile(
@@ -119,6 +119,11 @@ def _restore_destination(repo_root: Path, relative: PurePosixPath) -> Path:
         if current.is_symlink():
             raise BundleError(
                 f"Restore target has a symbolic-link parent: {relative.as_posix()}"
+            )
+        if current.exists() and not current.is_dir():
+            raise BundleError(
+                "Restore target has a non-directory parent; no files were written: "
+                f"{relative.as_posix()}"
             )
     if candidate.is_symlink():
         raise BundleError(f"Restore target is a symbolic link: {relative.as_posix()}")

@@ -29,6 +29,37 @@ MEMORY_FILES = {
     "search_results.md": "# Search Results\n",
     "events.md": "# Events\n",
 }
+EMAIL_FILES = {
+    "README.md": (
+        "# Private Academic Correspondence\n\n"
+        "Keep contacts, incoming messages, drafts, actual sent text, contribution "
+        "provenance, and source attachments here. See "
+        "[the email workflow](../../docs/email_workflow.md). A draft is not sent; "
+        "a sent proposal is not mutual agreement. Record the exact manuscript/version "
+        "and distinguish work before the exchange, the correspondent's contribution, "
+        "and later development. Check [the index](index.md) at manuscript "
+        "finalization/release for version-scoped obligations and attribution.\n"
+    ),
+    "contacts.md": (
+        "# Academic Contacts\n\n"
+        "No contacts recorded yet.\n\n"
+        "| Name | Verified address | Affiliation | Verification date/source | "
+        "Relevant projects |\n"
+        "| --- | --- | --- | --- | --- |\n"
+    ),
+    "index.md": (
+        "# Correspondence Index\n\n"
+        "No correspondence recorded yet.\n\n"
+        "| Date/thread | Artifact/version | Message status and evidence | "
+        "Obligation/condition | Owner/due or review point | Resolution/evidence |\n"
+        "| --- | --- | --- | --- | --- | --- |\n\n"
+        "For each substantive exchange, link the work before the exchange, "
+        "the received contribution, and later development. Keep conditional "
+        "obligations distinct from present commitments; state the exact trigger "
+        "and the evidence that it occurred. Do not infer consent, delivery, "
+        "collaboration, priority, or agreement from a draft or silence.\n"
+    ),
+}
 
 
 def _write(path: Path, content: str) -> None:
@@ -43,11 +74,18 @@ def create_project(repo_root: Path, name: str, title: str) -> Path:
     if project_dir.exists():
         raise FileExistsError(f"project already exists: {project_dir}")
 
-    template_path = repo_root / "templates" / "research_state.md"
-    if not template_path.is_file():
-        raise FileNotFoundError(f"missing template: {template_path}")
+    # Validate and read both required templates before creating any directory.
+    # A missing/unreadable template must not leave a partial project behind.
+    templates = {}
+    for filename in ("research_state.md", "subgoal_plan.md"):
+        template_path = repo_root / "templates" / filename
+        if not template_path.is_file():
+            raise FileNotFoundError(f"missing template: {template_path}")
+        templates[filename] = template_path.read_text(encoding="utf-8")
 
-    for child in ("notes", "memory", "refs", "downloads", "handoff"):
+    for child in (
+        "notes", "memory", "refs", "downloads", "email", "email/attachments", "handoff"
+    ):
         (project_dir / child).mkdir(parents=True, exist_ok=False)
         _write(project_dir / child / ".gitkeep", "")
 
@@ -59,16 +97,21 @@ def create_project(repo_root: Path, name: str, title: str) -> Path:
     )
     _write(project_dir / ".gitkeep", "")
 
-    state = template_path.read_text(encoding="utf-8").replace(
+    state = templates["research_state.md"].replace(
         "<short descriptive title>", title
     )
     _write(project_dir / "research_state.md", state)
     _write(project_dir / "goal.md", f"# Goal\n\n## Main Problem\n\n<state {title} precisely>\n")
     _write(project_dir / "progress.md", "# Progress\n")
-    _write(project_dir / "subgoal.md", "# Subgoals and Proof Plan\n")
+    _write(
+        project_dir / "subgoal.md",
+        templates["subgoal_plan.md"].replace("<short descriptive title>", title),
+    )
 
     for filename, heading in MEMORY_FILES.items():
         _write(project_dir / "memory" / filename, heading)
+    for filename, content in EMAIL_FILES.items():
+        _write(project_dir / "email" / filename, content)
 
     catalog_template = repo_root / "templates" / "reference_catalog.json"
     if catalog_template.is_file():

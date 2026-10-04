@@ -12,7 +12,7 @@ For one project registered in the merged public/local registry, export includes:
 - the project-local `README.md` when present;
 - `research_state.md`, `goal.md`, `progress.md`, and `subgoal.md` when present;
 - dated root notes such as `2026-08-07.md`;
-- `notes/`, `memory/`, `refs/`, `downloads/`, and `handoff/`;
+- `notes/`, `memory/`, `refs/`, `downloads/`, `email/`, and `handoff/` recursively;
 - existing `inbox/` files referenced anywhere in those Markdown files;
 - any additional `inbox/` files or directories explicitly named with `--inbox`.
 
@@ -20,6 +20,16 @@ Referenced inbox paths are discovered from relative Markdown links and inline
 path mentions such as `../inbox/report.md` or `../../inbox/report.md`. A broken
 inbox reference stops export instead of silently producing an incomplete
 bundle. Unreferenced inbox material is not included.
+
+Private `email/` material includes contact and thread indexes, contribution
+provenance, reply drafts, sent-message records, and nested source attachments.
+Inbox references in email Markdown are discovered by the same rules as other
+project notes. A bundle preserves the recorded status; exporting or restoring
+a draft never marks it sent, confirms an agreement, or discharges an obligation.
+See `email_workflow.md` for version-scoped correspondence and attribution checks.
+
+Manuscript workspaces such as `notes/<manuscript>/THEOREM_LEDGER.md`,
+`PAPER_PLAN.md`, and `paper.tex` are included with the rest of `notes/`.
 
 The exporter excludes public framework files already supplied by Git, `.gitkeep`,
 LanceDB and extracted-reference caches, Python/LaTeX intermediates, and generated
@@ -32,7 +42,8 @@ and every discovered or explicit inbox selection. SHA-256 detects corruption or 
 changes; it is not a signature and does not prove who created the archive.
 
 Problem bundles are not encrypted. Store or transmit unpublished research bundles
-through an appropriately private or encrypted channel.
+through an appropriately private or encrypted channel, particularly when they
+contain correspondence, personal contact details, or unpublished attachments.
 
 ## Clarify the transport operation
 
@@ -139,6 +150,9 @@ with the problem's detailed records, then propose a semantic merge:
 
 - append and deduplicate chronological logs;
 - preserve failures, counterexamples, examples, searches, and evidence from both sides;
+- retain both correspondence histories, contribution provenance, and exact sent
+  text; reconcile draft/sent/agreed status and version-scoped obligations using
+  evidence rather than choosing the newer file blindly;
 - reconcile `subgoal.md` against the newer proof obligations;
 - rebuild `research_state.md` as a compact snapshot only after detailed records agree.
 

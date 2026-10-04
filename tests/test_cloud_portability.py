@@ -12,6 +12,8 @@ class CloudPortabilityTests(unittest.TestCase):
             root / "docs" / "problem_bundle.md",
             root / "docs" / "reference_workflow.md",
             root / "docs" / "research_state_workflow.md",
+            root / "docs" / "state_compaction.md",
+            root / "docs" / "email_workflow.md",
             root / "lean" / "AGENTS.md",
             root / "lean" / "README.md",
             root / "skills" / "formalization-handoff" / "SKILL.md",
@@ -19,6 +21,8 @@ class CloudPortabilityTests(unittest.TestCase):
             root / "skills" / "long-autonomous-math-research" / "SKILL.md",
             root / "skills" / "pro-research-handoff" / "SKILL.md",
             root / "skills" / "review-latex-math-manuscript" / "SKILL.md",
+            root / "skills" / "write-self-contained-math-proof" / "SKILL.md",
+            root / "skills" / "write-self-contained-math-proof" / "references" / "manuscript-assembly.md",
         ]
         forbidden = [
             "```" + "powershell",

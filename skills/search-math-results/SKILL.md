@@ -15,8 +15,8 @@ Search for results that materially affect the current mathematical target, then 
 4. For literature research, continue externally even when local files are relevant. Local material is a seed and reading cache, not the search boundary.
 5. Prefer primary sources. Record exact versions, theorem numbers, URLs or identifiers, and publication status.
 6. For every arXiv paper selected for substantive local reading:
-   - obtain the version-matched source archive and PDF;
-   - extract the source under `<problem_dir>/refs/sources/`;
+   - ensure readable version-matched source and PDF files exist; reuse the catalog's canonical files and completed provenance/SHA-256 records;
+   - obtain or re-extract only missing, unreadable, conflicted, or suspect parts under `<problem_dir>/refs/sources/`, or the requested new/latest version;
    - identify and search the main `.tex` file first;
    - use PDF-extracted text only as a documented fallback;
    - verify exact statements, formulas, and numbering in the PDF or final published version.
@@ -26,6 +26,12 @@ Search for results that materially affect the current mathematical target, then 
 10. Label every finding as verified, partially verified, needs verification, inapplicable, or unresolved.
 
 Follow `docs/reference_workflow.md` when downloading or cataloging sources, and validate a changed catalog when practical. Do not trigger the optional LanceDB or Ollama workflow unless the user explicitly requests it.
+
+Reuse completed acquisition instead of repeating downloads, hashes, or online
+checks merely for reassurance. This does not skip reading the actual mathematics
+or checking applicability, requested `--check-files` validation, transport
+integrity hashing, or edited manuscript/reader consistency. Literature landscape,
+novelty, related-work, and latest-source requests still require external search.
 
 ## Persistence
 

@@ -60,6 +60,34 @@ class DetachedWorkflowPolicyTests(unittest.TestCase):
         self.assertIn("$write-self-contained-math-proof", proof_ui)
         self.assertIn("$review-latex-math-manuscript", review_ui)
 
+    def test_progressive_retrieval_preserves_authority_and_retractions(self):
+        agents = " ".join(read("AGENTS.md").split())
+        self.assertIn("latest 3–5 complete dated entries", agents)
+        self.assertIn("heading boundaries", agents)
+        self.assertIn("newer timestamp does not validate", agents)
+        self.assertIn("withdrawn premises", agents)
+        self.assertIn("user pauses", agents)
+        self.assertIn("reopening condition", agents)
+        self.assertIn("Self-review is not independent or formal verification", agents)
+        self.assertIn("projects.local.json", agents)
+        self.assertIn("missing private state", agents.lower())
+
+    def test_compaction_is_named_scope_opt_in_and_not_proof_certification(self):
+        agents = " ".join(read("AGENTS.md").split())
+        self.assertIn("exceeds 24,576 bytes AND a substantive milestone", agents)
+        self.assertIn("explicit agreement before drafting, archiving, or rewriting", agents)
+        self.assertIn("Never automatically compact progress, daily, or memory logs", agents)
+        self.assertIn("checks navigation, not mathematical validity", agents)
+        self.assertIn("docs/state_compaction.md", agents)
+
+    def test_correspondence_is_conditionally_routed_without_sending_authority(self):
+        agents = " ".join(read("AGENTS.md").split())
+        self.assertIn("docs/email_workflow.md", agents)
+        self.assertIn("manuscript finalization/release", agents)
+        self.assertIn("not at every compile", agents)
+        self.assertIn("never treat silence as agreement or a draft as sent", agents)
+        self.assertIn("Do not send external messages without an explicit request", agents)
+
     def test_same_project_lean_workflow_is_explicit_and_has_setup_gate(self):
         agents = read("AGENTS.md")
         skill = read("skills/lean-formalization/SKILL.md")

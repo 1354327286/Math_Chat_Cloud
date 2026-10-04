@@ -47,7 +47,7 @@ EXPECTED_PUBLIC_REGISTRY = {
     ],
 }
 PRIVATE_STATE_FILES = {"research_state.md", "goal.md", "progress.md", "subgoal.md"}
-PRIVATE_SUBDIRECTORIES = {"notes", "memory", "refs", "downloads", "handoff"}
+PRIVATE_SUBDIRECTORIES = {"notes", "memory", "refs", "downloads", "email", "handoff"}
 BLOCKED_SUFFIXES = {".pdf", ".tar", ".tgz", ".zip", ".lancedb"}
 DATED_NOTE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
 

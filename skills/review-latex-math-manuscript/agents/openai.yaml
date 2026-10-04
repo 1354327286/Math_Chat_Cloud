@@ -1,4 +1,4 @@
 interface:
   display_name: "Review LaTeX Math Manuscript"
-  short_description: "Clarify, compile, and visually audit LaTeX manuscripts"
-  default_prompt: "Use $review-latex-math-manuscript to resolve the review scope, then compile and visually audit the selected LaTeX manuscript."
+  short_description: "Scope, compile, and review readable LaTeX manuscripts"
+  default_prompt: "Use $review-latex-math-manuscript to resolve the source, review scope and target reader, then audit the requested LaTeX build, references and rendered pages. Allow legitimate previews and later proofs while checking dependency closure; distinguish self-review, independent mathematical review and artifact checks."

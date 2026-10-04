@@ -100,6 +100,223 @@ class ProblemBundleTests(unittest.TestCase):
         self.assertEqual(destination, self.bundle.resolve())
         return manifest
 
+    def _add_email_fixture(self) -> dict[str, bytes]:
+        files = {
+            "sample_problem/email/README.md": b"# Private correspondence\n",
+            "sample_problem/email/contacts.md": b"Synthetic contact; address not verified.\n",
+            "sample_problem/email/index.md": (
+                b"# Correspondence\n\n[Thread](2026-10-04_correspondent_topic.md)\n"
+                b"Artifact: notes/manuscript/paper.tex, draft revision.\n"
+                b"Status: reply draft; no sent proposal or mutual agreement.\n"
+                b"Condition: check attribution before finalization; unresolved.\n"
+            ),
+            "sample_problem/email/2026-10-04_correspondent_topic.md": (
+                b"# Contribution provenance\n\n"
+                b"Before: original lemma. Received: suggested simplification.\n"
+                b"After: AI-assisted analysis; needs verification.\n"
+                b"Source: [raw message](attachments/thread/original.eml).\n"
+                b"See [intake](../../inbox/email_intake/context.md) and "
+                b"[source](../../inbox/email_intake/source.pdf).\n"
+                b"Reply draft only; no sending evidence.\n"
+            ),
+            "sample_problem/email/attachments/thread/original.eml": (
+                b"Subject: Synthetic contribution\r\n\r\nOriginal source text.\r\n"
+            ),
+            "sample_problem/email/attachments/thread/proof.pdf": b"%PDF-1.4\nfixture\x00\xff",
+            "sample_problem/email/attachments/thread/screenshot.png": b"\x89PNG\r\n\x1a\nfixture",
+            "inbox/email_intake/context.md": b"# Unprocessed original source\n",
+            "inbox/email_intake/source.pdf": b"%PDF inbox fixture\x00",
+        }
+        for relative, content in files.items():
+            path = self.source_repo / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+        return files
+
+    @staticmethod
+    def _snapshot(root: Path) -> dict[str, bytes | None]:
+        return {
+            path.relative_to(root).as_posix(): path.read_bytes() if path.is_file() else None
+            for path in root.rglob("*")
+        }
+
+    def test_email_round_trip_preserves_provenance_attachments_and_inbox(self):
+        files = self._add_email_fixture()
+        manifest = self._export()
+        entries = {entry["path"]: entry for entry in manifest["files"]}
+        self.assertTrue(set(files).issubset(entries))
+        for relative in files:
+            expected_category = "project-email" if "/email/" in relative else "inbox-reference"
+            self.assertEqual(entries[relative]["category"], expected_category)
+        self.assertEqual(
+            manifest["referenced_inbox"],
+            ["inbox/email_intake/context.md", "inbox/email_intake/source.pdf", "inbox/related.md"],
+        )
+        self.assertNotIn("inbox/unrelated.md", entries)
+        self.assertEqual(verify_bundle(self.bundle), manifest)
+
+        restored = restore_bundle(self.bundle, self.restore_repo)
+        self.assertEqual(restored["registry"], "create")
+        for relative, content in files.items():
+            with self.subTest(path=relative):
+                self.assertEqual((self.restore_repo / relative).read_bytes(), content)
+        self.assertEqual(
+            json.loads((self.restore_repo / "projects.local.json").read_text()),
+            json.loads((self.source_repo / "projects.local.json").read_text()),
+        )
+        snapshot = self._snapshot(self.restore_repo)
+        repeated = restore_bundle(self.bundle, self.restore_repo)
+        self.assertEqual(repeated["create"], 0)
+        self.assertEqual(repeated["unchanged"], len(entries))
+        self.assertEqual(repeated["registry"], "unchanged")
+        self.assertEqual(self._snapshot(self.restore_repo), snapshot)
+
+    def test_nested_manuscript_ledger_plan_and_tex_round_trip(self):
+        files = {
+            "THEOREM_LEDGER.md": b"# Theorem ledger\nCore result: needs verification.\n",
+            "PAPER_PLAN.md": b"# Paper plan\nExact statement, proof, limitations.\n",
+            "paper.tex": b"\\documentclass{article}\n\\begin{document}Draft\\end{document}\n",
+        }
+        manuscript = self.source_repo / "sample_problem" / "notes" / "manuscript"
+        manuscript.mkdir()
+        for name, content in files.items():
+            (manuscript / name).write_bytes(content)
+        manifest = self._export()
+        paths = {entry["path"] for entry in manifest["files"]}
+        restore_bundle(self.bundle, self.restore_repo)
+        for name, content in files.items():
+            relative = f"sample_problem/notes/manuscript/{name}"
+            with self.subTest(path=relative):
+                self.assertIn(relative, paths)
+                self.assertEqual((self.restore_repo / relative).read_bytes(), content)
+
+    def test_email_export_and_restore_dry_runs_write_nothing(self):
+        self._add_email_fixture()
+        output = self.root / "not-created" / "email.zip"
+        source_before = self._snapshot(self.source_repo)
+        destination, preview = export_bundle(
+            self.source_repo, "sample_problem", (), output, dry_run=True
+        )
+        self.assertIsNone(destination)
+        self.assertFalse(output.parent.exists())
+        self.assertEqual(self._snapshot(self.source_repo), source_before)
+        self.assertIn("project-email", {entry["category"] for entry in preview["files"]})
+        self._export()
+        restore_before = self._snapshot(self.restore_repo)
+        summary = restore_bundle(self.bundle, self.restore_repo, dry_run=True)
+        self.assertEqual(summary["registry"], "create")
+        self.assertGreater(summary["create"], 0)
+        self.assertEqual(self._snapshot(self.restore_repo), restore_before)
+
+    def test_email_conflicts_preserve_every_file_and_registry(self):
+        self._add_email_fixture()
+        self._export()
+        conflicts = [
+            "sample_problem/email/index.md",
+            "sample_problem/email/attachments/thread/original.eml",
+        ]
+        for relative in conflicts:
+            path = self.restore_repo / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"Different local history; preserve me.\n")
+        before = self._snapshot(self.restore_repo)
+        with self.assertRaisesRegex(BundleError, "no files were written") as raised:
+            restore_bundle(self.bundle, self.restore_repo)
+        for relative in conflicts:
+            self.assertIn(relative, str(raised.exception))
+        self.assertEqual(self._snapshot(self.restore_repo), before)
+        self.assertFalse((self.restore_repo / "projects.local.json").exists())
+
+    def test_email_conflicts_respect_explicit_keep_and_overwrite(self):
+        files = self._add_email_fixture()
+        self._export()
+        relative = "sample_problem/email/index.md"
+        conflict = self.restore_repo / relative
+        conflict.parent.mkdir(parents=True)
+        conflict.write_bytes(b"Locally reconciled provenance.\n")
+        summary = restore_bundle(self.bundle, self.restore_repo, keep_existing=True)
+        self.assertEqual(summary["kept"], 1)
+        self.assertEqual(summary["registry"], "create")
+        self.assertEqual(conflict.read_bytes(), b"Locally reconciled provenance.\n")
+        for path, content in files.items():
+            if path != relative:
+                self.assertEqual((self.restore_repo / path).read_bytes(), content)
+        summary = restore_bundle(self.bundle, self.restore_repo, overwrite=True)
+        self.assertEqual(summary["overwrite"], 1)
+        self.assertEqual(conflict.read_bytes(), files[relative])
+
+    def test_email_registry_conflict_blocks_all_conflict_modes(self):
+        self._add_email_fixture()
+        self._export()
+        registry = json.loads((self.source_repo / "projects.local.json").read_text())
+        registry["projects"][0]["description"] = "Incompatible project identity"
+        (self.restore_repo / "projects.local.json").write_text(json.dumps(registry))
+        before = self._snapshot(self.restore_repo)
+        for mode in ({}, {"keep_existing": True}, {"overwrite": True}, {"dry_run": True}):
+            with self.subTest(mode=mode):
+                with self.assertRaisesRegex(BundleError, "local registry; no files were written"):
+                    restore_bundle(self.bundle, self.restore_repo, **mode)
+                self.assertEqual(self._snapshot(self.restore_repo), before)
+
+    def test_missing_email_inbox_reference_blocks_export(self):
+        self._add_email_fixture()
+        (self.source_repo / "inbox" / "email_intake" / "source.pdf").unlink()
+        with self.assertRaisesRegex(BundleError, "references missing inbox path"):
+            self._export()
+        self.assertFalse(self.bundle.exists())
+
+    def test_tampered_email_attachment_blocks_restore_before_writes(self):
+        self._add_email_fixture()
+        self._export()
+        tampered = self.root / "tampered-email.zip"
+        with zipfile.ZipFile(self.bundle) as source, zipfile.ZipFile(tampered, "w") as target:
+            for name in source.namelist():
+                data = source.read(name)
+                if name.endswith("email/attachments/thread/original.eml"):
+                    data = bytes([data[0] ^ 1]) + data[1:]
+                target.writestr(name, data)
+        before = self._snapshot(self.restore_repo)
+        with self.assertRaisesRegex(BundleError, "SHA-256"):
+            restore_bundle(tampered, self.restore_repo)
+        self.assertEqual(self._snapshot(self.restore_repo), before)
+
+    def test_email_export_rejects_symlinked_attachment(self):
+        self._add_email_fixture()
+        external = self.root / "outside.eml"
+        external.write_bytes(b"Not part of this project")
+        attachment = self.source_repo / "sample_problem" / "email" / "attachments" / "linked.eml"
+        attachment.symlink_to(external)
+        with self.assertRaisesRegex(BundleError, "Symbolic links are not allowed"):
+            self._export()
+        self.assertFalse(self.bundle.exists())
+
+    def test_email_restore_rejects_symlinked_attachment_parent_before_writes(self):
+        self._add_email_fixture()
+        self._export()
+        email = self.restore_repo / "sample_problem" / "email"
+        email.mkdir(parents=True)
+        public_target = self.restore_repo / "scripts"
+        public_target.mkdir()
+        (email / "attachments").symlink_to(public_target, target_is_directory=True)
+        with self.assertRaisesRegex(BundleError, "symbolic-link parent"):
+            restore_bundle(self.bundle, self.restore_repo)
+        self.assertEqual(list(public_target.iterdir()), [])
+        self.assertFalse((email / "README.md").exists())
+        self.assertFalse((self.restore_repo / "projects.local.json").exists())
+
+    def test_email_restore_rejects_file_as_attachment_parent_before_writes(self):
+        self._add_email_fixture()
+        self._export()
+        email = self.restore_repo / "sample_problem" / "email"
+        email.mkdir(parents=True)
+        (email / "attachments").write_bytes(b"Existing file, not a directory.\n")
+        before = self._snapshot(self.restore_repo)
+        for mode in ({}, {"keep_existing": True}, {"overwrite": True}, {"dry_run": True}):
+            with self.subTest(mode=mode):
+                with self.assertRaisesRegex(BundleError, "non-directory parent; no files were written"):
+                    restore_bundle(self.bundle, self.restore_repo, **mode)
+                self.assertEqual(self._snapshot(self.restore_repo), before)
+
     def test_round_trip_preserves_private_files_and_referenced_inbox(self):
         manifest = self._export()
         paths = {entry["path"] for entry in manifest["files"]}
@@ -205,7 +422,13 @@ class ProblemBundleTests(unittest.TestCase):
             self._export()
 
     def test_manifest_cannot_target_public_or_git_paths(self):
-        for relative in ("projects.json", "inbox/README.md", "sample_problem/notes/.git/config"):
+        for relative in (
+            "projects.json",
+            "inbox/README.md",
+            "sample_problem/notes/.git/config",
+            "sample_problem/email/.git/config",
+            "another_problem/email/index.md",
+        ):
             with self.subTest(relative=relative):
                 malicious = self.root / f"malicious-{hashlib.sha256(relative.encode()).hexdigest()[:8]}.zip"
                 data = b"overwrite"
